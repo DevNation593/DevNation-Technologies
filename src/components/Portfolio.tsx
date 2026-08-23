@@ -1,31 +1,28 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Icon } from "@iconify/react";
 
 const projects = [
   {
     title: "FinTrack Pro",
     description:
-      "Una plataforma integral de gestión financiera con analíticas en tiempo real, reportes automatizados y soporte multi-moneda para empresas en crecimiento.",
+      "Una herramienta para controlar las finanzas de una empresa, consultar movimientos al instante y crear reportes sin trabajo manual.",
     technologies: ["Next.js", "Node.js", "PostgreSQL", "AWS"],
     gradient: "from-blue-600/20 to-cyan-600/20",
   },
   {
     title: "NuVet",
     description:
-      "Un SaaS para clínicas veterinarias con gestión de pacientes, historiales clínicos, agenda de citas, facturación y seguimiento de tratamientos en una sola plataforma.",
+      "Un sistema para clínicas veterinarias que reúne citas, historias de pacientes, facturas y tratamientos en un solo lugar.",
     technologies: ["Next.js", "Node.js", "PostgreSQL", "TailwindCSS"],
     gradient: "from-emerald-600/20 to-teal-600/20",
-    demoUrl: "https://nuvet.devnation593.com",
   },
   {
-    title: "Psychology Clinic SaaS",
+    title: "Sistema para consultorios psicológicos",
     description:
-      "Un SaaS para clínicas psicológicas con gestión de pacientes, expedientes clínicos, programación de sesiones, seguimiento de terapias y reportes de progreso.",
+      "Una herramienta para organizar sesiones, guardar expedientes, planificar terapias y dar seguimiento al progreso de cada paciente.",
     technologies: ["React", "TailwindCSS", "PostgreSQL", "AWS"],
     gradient: "from-purple-600/20 to-pink-600/20",
-    demoUrl: "https://psic.devnation593.com/",
   },
 ];
 
@@ -41,14 +38,14 @@ export default function Portfolio() {
           className="text-center mb-16"
         >
           <span className="text-accent text-sm font-semibold tracking-wider uppercase">
-            Nuestro Trabajo
+            Proyectos
           </span>
-          <h2 className="mt-3 text-3xl md:text-4xl font-bold">
-            Proyectos Destacados
-          </h2>
+          <h1 className="mt-3 text-3xl md:text-4xl font-bold">
+            Algunos proyectos en los que hemos trabajado
+          </h1>
           <p className="mt-4 text-muted max-w-2xl mx-auto">
-            Una selección de proyectos que demuestran nuestra experiencia y compromiso
-            con la entrega de productos digitales excepcionales.
+            Soluciones creadas para ordenar tareas, ahorrar tiempo y facilitar
+            el trabajo diario de distintos negocios.
           </p>
         </motion.div>
 
@@ -91,17 +88,6 @@ export default function Portfolio() {
                     </span>
                   ))}
                 </div>
-                {"demoUrl" in project && project.demoUrl && (
-                  <a
-                    href={project.demoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-accent hover:text-white bg-accent/10 hover:bg-accent px-4 py-2 rounded-lg transition-all duration-200"
-                  >
-                    <Icon icon="tabler:external-link" className="w-4 h-4" />
-                    Ver Demo
-                  </a>
-                )}
               </div>
             </motion.div>
           ))}

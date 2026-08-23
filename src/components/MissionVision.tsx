@@ -7,37 +7,37 @@ const values = [
   {
     title: "Integridad",
     description:
-      "Actuamos con honestidad y transparencia en cada interacción, cumpliendo nuestros compromisos y construyendo relaciones basadas en la confianza.",
+      "Hablamos con honestidad, cumplimos lo acordado y construimos relaciones basadas en la confianza.",
     iconName: "tabler:shield-heart",
   },
   {
-    title: "Innovación Constante",
+    title: "Ideas que aportan",
     description:
-      "Exploramos continuamente nuevas tecnologías y metodologías para ofrecer soluciones creativas que marquen la diferencia.",
+      "Buscamos nuevas formas de resolver cada reto, pero solo usamos lo que aporta un beneficio real.",
     iconName: "tabler:rocket",
   },
   {
-    title: "Excelencia Técnica",
+    title: "Trabajo bien hecho",
     description:
-      "Nos comprometemos con los más altos estándares de calidad en cada línea de código, cada diseño y cada entrega.",
+      "Cuidamos los detalles y revisamos nuestro trabajo para entregar soluciones confiables.",
     iconName: "tabler:award",
   },
   {
-    title: "Colaboración",
+    title: "Trabajo en equipo",
     description:
-      "Trabajamos como un equipo unido con nuestros clientes, fomentando la comunicación abierta y la co-creación de soluciones.",
+      "Escuchamos a nuestros clientes y tomamos las decisiones importantes junto a ellos.",
     iconName: "tabler:users-group",
   },
   {
-    title: "Responsabilidad",
+    title: "Compromiso",
     description:
-      "Asumimos la responsabilidad de nuestro trabajo y su impacto, protegiendo los datos y la confianza de quienes trabajan con nosotros.",
+      "Nos hacemos cargo de nuestro trabajo y cuidamos la información y la confianza de cada cliente.",
     iconName: "tabler:certificate",
   },
   {
-    title: "Pasión por el Aprendizaje",
+    title: "Aprendizaje continuo",
     description:
-      "Cultivamos una cultura de aprendizaje continuo, manteniéndonos a la vanguardia en un mundo tecnológico en constante evolución.",
+      "Seguimos aprendiendo para mejorar nuestro trabajo y ofrecer soluciones cada vez más útiles.",
     iconName: "tabler:book",
   },
 ];
@@ -71,14 +71,14 @@ export default function MissionVision() {
           className="text-center mb-16"
         >
           <span className="text-accent text-sm font-semibold tracking-wider uppercase">
-            Nuestra Identidad
+            Lo que nos guía
           </span>
-          <h2 className="mt-3 text-3xl md:text-4xl font-bold">
-            Misión, Visión y Valores
-          </h2>
+          <h1 className="mt-3 text-3xl md:text-4xl font-bold">
+            Misión, visión y valores
+          </h1>
           <p className="mt-4 text-muted max-w-2xl mx-auto">
-            Los pilares que guían cada decisión, cada línea de código y cada
-            relación que construimos.
+            Estas ideas muestran por qué hacemos nuestro trabajo y cómo queremos
+            relacionarnos con cada cliente.
           </p>
         </motion.div>
 
@@ -97,14 +97,13 @@ export default function MissionVision() {
               <div className="w-12 h-12 bg-accent/10 text-accent rounded-xl flex items-center justify-center shrink-0">
                 <Icon icon="tabler:target-arrow" className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold">Nuestra Misión</h3>
+              <h3 className="text-xl font-bold">Nuestra misión</h3>
             </div>
             <p className="text-muted leading-relaxed">
-              Diseñar y desarrollar soluciones digitales innovadoras, escalables y de
-              alta calidad que impulsen el crecimiento de empresas y emprendimientos en
-              Ecuador y Latinoamérica. Combinamos excelencia técnica con un profundo
-              entendimiento de las necesidades de nuestros clientes para transformar
-              ideas en productos tecnológicos que generen impacto real.
+              Ayudar a empresas y emprendimientos de Ecuador y Latinoamérica a
+              convertir sus ideas en herramientas digitales útiles. Escuchamos sus
+              necesidades, buscamos una solución sencilla y construimos algo que les
+              ayude a trabajar mejor y seguir creciendo.
             </p>
           </motion.div>
 
@@ -121,15 +120,12 @@ export default function MissionVision() {
               <div className="w-12 h-12 bg-accent/10 text-accent rounded-xl flex items-center justify-center shrink-0">
                 <Icon icon="tabler:eye" className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold">Nuestra Visión</h3>
+              <h3 className="text-xl font-bold">Nuestra visión</h3>
             </div>
             <p className="text-muted leading-relaxed">
-              Ser la empresa de desarrollo de software de referencia en Ecuador,
-              reconocida por nuestra capacidad de innovación, la calidad de nuestras
-              soluciones y el compromiso con el éxito de nuestros clientes.
-              Aspiramos a liderar la transformación digital en la región,
-              construyendo tecnología que conecte, empodere y eleve el potencial
-              de las organizaciones.
+              Convertirnos en un equipo de confianza para empresas de Ecuador y la
+              región. Queremos que nos elijan por escuchar, cumplir lo acordado y
+              crear soluciones que sean fáciles de usar y aporten resultados reales.
             </p>
           </motion.div>
         </div>
@@ -143,11 +139,10 @@ export default function MissionVision() {
           className="text-center mb-10"
         >
           <h3 className="text-2xl md:text-3xl font-bold">
-            Nuestros <span className="text-accent">Valores</span>
+            Nuestros <span className="text-accent">valores</span>
           </h3>
           <p className="mt-3 text-muted max-w-xl mx-auto">
-            Los principios fundamentales que definen nuestra cultura y guían
-            nuestro trabajo diario.
+            Las ideas que ponemos en práctica cada día y en cada proyecto.
           </p>
         </motion.div>
 

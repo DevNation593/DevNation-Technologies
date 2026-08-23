@@ -1,29 +1,79 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "DevNation593 | Construyendo Soluciones Digitales para el Futuro",
-  description:
-    "DevNation593 crea aplicaciones web, móviles y en la nube modernas. Equipo experto en desarrollo de software entregando soluciones escalables e innovadoras.",
-  keywords: [
-    "desarrollo de software",
-    "desarrollo web",
-    "aplicaciones móviles",
-    "soluciones en la nube",
-    "DevNation593",
-  ],
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: siteConfig.title,
+    template: `%s | ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+  applicationName: siteConfig.name,
+  authors: [{ name: siteConfig.name, url: siteConfig.url }],
+  creator: siteConfig.name,
+  publisher: siteConfig.name,
+  category: "technology",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
-    title: "DevNation593 | Construyendo Soluciones Digitales para el Futuro",
-    description:
-      "Equipo experto en desarrollo de software entregando soluciones escalables e innovadoras.",
+    title: siteConfig.title,
+    description: siteConfig.description,
+    url: "/",
+    siteName: siteConfig.name,
+    locale: siteConfig.locale,
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.title,
+    description: siteConfig.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  formatDetection: {
+    address: false,
+    email: false,
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  colorScheme: "dark",
+  themeColor: "#070b14",
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": `${siteConfig.url}/#organization`,
+  name: siteConfig.name,
+  url: siteConfig.url,
+  email: siteConfig.email,
+  description: siteConfig.description,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Quito",
+    addressCountry: "EC",
+  },
+  sameAs: [siteConfig.social.github, siteConfig.social.linkedin],
+  knowsAbout: [
+    "Desarrollo de software a medida",
+    "Desarrollo web",
+    "Aplicaciones móviles",
+    "Soluciones en la nube",
+    "Diseño de experiencia de usuario",
+  ],
 };
 
 export default function RootLayout({
@@ -32,8 +82,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="dark">
-      <body className={`${inter.variable} antialiased`}>{children}</body>
+    <html lang={siteConfig.language} className="dark">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationJsonLd).replace(/</g, "\\u003c"),
+          }}
+        />
+      </head>
+      <body className="antialiased">{children}</body>
     </html>
   );
 }

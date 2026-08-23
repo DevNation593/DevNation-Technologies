@@ -3,12 +3,24 @@
 import { motion } from "framer-motion";
 import { FormEvent, useState } from "react";
 import { Icon } from "@iconify/react";
+import { siteConfig } from "@/lib/site";
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    const name = String(formData.get("name") ?? "");
+    const email = String(formData.get("email") ?? "");
+    const message = String(formData.get("message") ?? "");
+    const subject = encodeURIComponent(`Quiero conversar sobre un proyecto — ${name}`);
+    const body = encodeURIComponent(
+      `Nombre: ${name}\nCorreo: ${email}\n\nProyecto:\n${message}`,
+    );
+
+    window.location.href = `mailto:${siteConfig.email}?subject=${subject}&body=${body}`;
     setSubmitted(true);
   };
 
@@ -23,14 +35,13 @@ export default function Contact() {
           className="text-center mb-16"
         >
           <span className="text-accent text-sm font-semibold tracking-wider uppercase">
-            Contacto
+            Hablemos
           </span>
-          <h2 className="mt-3 text-3xl md:text-4xl font-bold">
-            Trabajemos Juntos
-          </h2>
+          <h1 className="mt-3 text-3xl md:text-4xl font-bold">
+            Cuéntanos sobre tu proyecto
+          </h1>
           <p className="mt-4 text-muted max-w-2xl mx-auto">
-            ¿Listo para dar vida a tu proyecto? Contáctanos y
-            conversemos sobre cómo podemos ayudarte.
+            Completa tus datos y se abrirá un correo listo para enviarnos.
           </p>
         </motion.div>
 
@@ -47,14 +58,15 @@ export default function Contact() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center h-full p-12 bg-card rounded-2xl border border-accent/30 text-center"
+                role="status"
               >
                 <div className="w-16 h-16 bg-accent/20 text-accent rounded-full flex items-center justify-center mb-4">
                   <Icon icon="tabler:check" className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">¡Mensaje Enviado!</h3>
+                <h2 className="text-xl font-semibold mb-2">Tu correo está listo</h2>
                 <p className="text-muted text-sm">
-                  Gracias por tu interés. Te responderemos en un plazo
-                  de 24 horas.
+                  Solo falta enviarlo desde tu aplicación de correo. Si no se abrió,
+                  puedes escribirnos directamente a {siteConfig.email}.
                 </p>
               </motion.div>
             ) : (
@@ -71,26 +83,28 @@ export default function Contact() {
                     id="name"
                     name="name"
                     required
+                    autoComplete="name"
                     className="w-full bg-darker border border-border rounded-lg px-4 py-3 text-sm text-white placeholder:text-muted/60 focus:outline-none focus:border-accent transition-colors"
                     placeholder="Tu nombre"
                   />
                 </div>
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium mb-2">
-                    Correo Electrónico
+                    Correo electrónico
                   </label>
                   <input
                     type="email"
                     id="email"
                     name="email"
                     required
+                    autoComplete="email"
                     className="w-full bg-darker border border-border rounded-lg px-4 py-3 text-sm text-white placeholder:text-muted/60 focus:outline-none focus:border-accent transition-colors"
-                    placeholder="contactos@devnation593.com"
+                    placeholder="tu@empresa.com"
                   />
                 </div>
                 <div>
                   <label htmlFor="message" className="block text-sm font-medium mb-2">
-                    Descripción del Proyecto
+                    Cuéntanos qué necesitas
                   </label>
                   <textarea
                     id="message"
@@ -98,14 +112,14 @@ export default function Contact() {
                     rows={5}
                     required
                     className="w-full bg-darker border border-border rounded-lg px-4 py-3 text-sm text-white placeholder:text-muted/60 focus:outline-none focus:border-accent transition-colors resize-none"
-                    placeholder="Cuéntanos sobre tu proyecto..."
+                    placeholder="Describe brevemente tu idea o necesidad..."
                   />
                 </div>
                 <button
                   type="submit"
                   className="w-full bg-accent hover:bg-accent-hover text-white font-semibold py-3.5 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-accent/25"
                 >
-                  Solicitar Cotización
+                  Abrir mi correo
                 </button>
               </form>
             )}
@@ -120,17 +134,17 @@ export default function Contact() {
             className="flex flex-col justify-center gap-8"
           >
             <div>
-              <h3 className="text-lg font-semibold mb-4">Ponte en Contacto</h3>
+              <h2 className="text-lg font-semibold mb-4">También puedes encontrarnos en</h2>
               <p className="text-muted text-sm leading-relaxed mb-8">
-                ¿Tienes preguntas o quieres discutir un proyecto? Estamos aquí
-                para ayudarte. Contáctanos por cualquiera de los canales a continuación.
+                Escríbenos directamente o visita nuestros perfiles para conocer
+                más sobre nuestro trabajo.
               </p>
             </div>
 
             <div className="space-y-6">
               {/* Email */}
               <a
-                href="mailto:contactos@devnation593.com"
+                href={`mailto:${siteConfig.email}`}
                 className="flex items-center gap-4 group"
               >
                 <div className="w-12 h-12 bg-card border border-border rounded-xl flex items-center justify-center group-hover:border-accent/40 transition-colors">
@@ -138,29 +152,13 @@ export default function Contact() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">Correo</p>
-                  <p className="text-muted text-sm">contactos@devnation593.com</p>
-                </div>
-              </a>
-
-              {/* WhatsApp */}
-              <a
-                href="https://wa.me/593000000000"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-4 group"
-              >
-                <div className="w-12 h-12 bg-card border border-border rounded-xl flex items-center justify-center group-hover:border-accent/40 transition-colors">
-                  <Icon icon="simple-icons:whatsapp" className="w-5 h-5 text-accent" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">WhatsApp</p>
-                  <p className="text-muted text-sm">+593 00 000 0000</p>
+                  <p className="text-muted text-sm">{siteConfig.email}</p>
                 </div>
               </a>
 
               {/* LinkedIn */}
               <a
-                href="https://linkedin.com/company/devnation593"
+                href={siteConfig.social.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-4 group"
@@ -176,7 +174,7 @@ export default function Contact() {
 
               {/* GitHub */}
               <a
-                href="https://github.com/devnation593"
+                href={siteConfig.social.github}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-4 group"

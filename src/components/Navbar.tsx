@@ -2,14 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const navLinks = [
-  { href: "/#about", label: "Nosotros" },
-  { href: "/mision-vision", label: "Misión y Visión" },
-  { href: "/#services", label: "Servicios" },
-  { href: "/portafolio", label: "Portafolio" },
-  { href: "/#why-us", label: "¿Por qué elegirnos?" },
-];
+import Link from "next/link";
+import { navigationLinks } from "@/lib/site";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -23,6 +17,7 @@ export default function Navbar() {
 
   return (
     <motion.nav
+      aria-label="Navegación principal"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
@@ -33,34 +28,36 @@ export default function Navbar() {
       }`}
     >
       <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-        <a href="/" className="text-xl font-bold tracking-tight">
+        <Link href="/" className="text-xl font-bold tracking-tight">
           Dev<span className="text-accent">Nation</span>593
-        </a>
+        </Link>
 
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <a
+          {navigationLinks.map((link) => (
+            <Link
               key={link.href}
               href={link.href}
               className="text-sm text-muted hover:text-white transition-colors duration-200"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
-          <a
+          <Link
             href="/contacto"
             className="bg-accent hover:bg-accent-hover text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors duration-200"
           >
             Contáctanos
-          </a>
+          </Link>
         </div>
 
         {/* Mobile toggle */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
           className="md:hidden flex flex-col gap-1.5 p-2"
-          aria-label="Abrir menú"
+          aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
+          aria-expanded={mobileOpen}
+          aria-controls="mobile-navigation"
         >
           <motion.span
             animate={mobileOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
@@ -81,29 +78,30 @@ export default function Navbar() {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
+            id="mobile-navigation"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-darker/95 backdrop-blur-xl border-b border-border overflow-hidden"
           >
             <div className="px-6 py-4 flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <a
+              {navigationLinks.map((link) => (
+                <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
                   className="text-muted hover:text-white transition-colors"
                 >
                   {link.label}
-                </a>
+                </Link>
               ))}
-              <a
+              <Link
                 href="/contacto"
                 onClick={() => setMobileOpen(false)}
                 className="bg-accent hover:bg-accent-hover text-white text-sm font-medium px-5 py-2.5 rounded-lg text-center transition-colors"
               >
                 Contáctanos
-              </a>
+              </Link>
             </div>
           </motion.div>
         )}

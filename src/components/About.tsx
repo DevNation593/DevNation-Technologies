@@ -16,22 +16,21 @@ export default function About() {
             transition={{ duration: 0.7, ease: "easeOut" }}
           >
             <span className="text-accent text-sm font-semibold tracking-wider uppercase">
-              Sobre Nosotros
+              Sobre nosotros
             </span>
             <h2 className="mt-3 text-3xl md:text-4xl font-bold leading-tight">
-              Excelencia en Ingeniería,{" "}
-              <span className="text-accent">Garantizada</span>
+              Convertimos tus ideas en{" "}
+              <span className="text-accent">soluciones que funcionan</span>
             </h2>
             <p className="mt-6 text-muted leading-relaxed">
-              DevNation593 es un estudio de desarrollo de software especializado en
-              construir aplicaciones escalables y de alto rendimiento. Nuestro equipo de
-              ingenieros experimentados combina profunda experiencia técnica con la
-              pasión por crear soluciones que marcan la diferencia.
+              Somos un equipo de desarrollo de software en Quito. Trabajamos con
+              empresas y emprendimientos que necesitan una página, una aplicación
+              o un sistema hecho para su forma de trabajar.
             </p>
             <p className="mt-4 text-muted leading-relaxed">
-              Desde el concepto hasta el despliegue, nos asociamos con empresas para
-              transformar ideas en productos digitales robustos utilizando tecnologías
-              modernas y mejores prácticas en ingeniería de software.
+              Te acompañamos desde la idea inicial hasta el lanzamiento. Primero
+              entendemos lo que necesitas y después elegimos la mejor manera de
+              construirlo, sin complicaciones innecesarias.
             </p>
           </motion.div>
 
@@ -45,24 +44,24 @@ export default function About() {
           >
             {[
               {
-                title: "Confiabilidad",
-                desc: "Sistemas confiables diseñados para funcionar bajo cualquier carga.",
-                iconName: "tabler:shield-check",
+                title: "Escuchamos",
+                desc: "Conocemos tu idea, tus necesidades y las personas que usarán la solución.",
+                iconName: "tabler:search",
               },
               {
-                title: "Innovación",
-                desc: "Soluciones tecnológicas de vanguardia para desafíos modernos.",
-                iconName: "tabler:bulb",
+                title: "Proponemos",
+                desc: "Te mostramos opciones claras y te ayudamos a elegir la más conveniente.",
+                iconName: "tabler:route",
               },
               {
-                title: "Calidad",
-                desc: "Código limpio, software probado y mantenible.",
-                iconName: "tabler:star",
+                title: "Construimos",
+                desc: "Compartimos avances frecuentes para que puedas revisar el resultado.",
+                iconName: "tabler:iterations",
               },
               {
-                title: "Escalabilidad",
-                desc: "Arquitecturas que crecen con tu negocio.",
-                iconName: "tabler:chart-arrows-vertical",
+                title: "Acompañamos",
+                desc: "Seguimos contigo después del lanzamiento para resolver dudas y mejorar.",
+                iconName: "tabler:trending-up",
               },
             ].map((item) => (
               <motion.div

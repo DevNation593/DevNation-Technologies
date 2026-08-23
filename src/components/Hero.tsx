@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export default function Hero() {
   return (
@@ -30,9 +31,9 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.15, ease: "easeOut" }}
           className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight tracking-tight"
         >
-          Construyendo Soluciones Digitales
+          Creamos software a medida
           <br />
-          <span className="text-accent">para el Futuro</span>
+          <span className="text-accent">para impulsar tu negocio</span>
         </motion.h1>
 
         <motion.p
@@ -41,8 +42,8 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
           className="mt-6 text-lg md:text-xl text-muted max-w-2xl mx-auto leading-relaxed"
         >
-          DevNation593 crea aplicaciones web, móviles y en la nube
-          que impulsan el crecimiento y transforman negocios.
+          Diseñamos páginas web, aplicaciones móviles y sistemas en la nube
+          que se adaptan a la forma en que trabaja tu empresa.
         </motion.p>
 
         <motion.div
@@ -51,17 +52,17 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.45, ease: "easeOut" }}
           className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <a
+          <Link
             href="/contacto"
             className="w-full sm:w-auto bg-accent hover:bg-accent-hover text-white font-semibold px-8 py-3.5 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-accent/25"
           >
-            Inicia Tu Proyecto
-          </a>
+            Cuéntanos tu idea
+          </Link>
           <a
             href="#services"
             className="w-full sm:w-auto border border-border hover:border-muted text-white font-medium px-8 py-3.5 rounded-lg transition-all duration-200 hover:bg-white/5"
           >
-            Ver Nuestros Servicios
+            Conoce nuestros servicios
           </a>
         </motion.div>
 

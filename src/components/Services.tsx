@@ -5,28 +5,28 @@ import { Icon } from "@iconify/react";
 
 const services = [
   {
-    title: "Desarrollo Web",
-    description: "Aplicaciones web modernas y escalables construidas con frameworks de vanguardia y mejores prácticas.",
+    title: "Desarrollo web",
+    description: "Creamos páginas y sistemas web fáciles de usar, rápidos y adaptados a tu negocio.",
     iconName: "tabler:world-www",
   },
   {
-    title: "Desarrollo Móvil",
-    description: "Aplicaciones móviles multiplataforma que ofrecen rendimiento nativo y experiencias fluidas.",
+    title: "Desarrollo móvil",
+    description: "Desarrollamos aplicaciones para iPhone y Android que funcionan de forma rápida y sencilla.",
     iconName: "tabler:device-mobile",
   },
   {
-    title: "Soluciones en la Nube",
-    description: "Arquitectura cloud robusta y estrategias de despliegue para un rendimiento y costo óptimos.",
+    title: "Soluciones en la nube",
+    description: "Preparamos tus sistemas para que estén disponibles en línea, sean seguros y puedan crecer contigo.",
     iconName: "tabler:cloud-computing",
   },
   {
-    title: "Diseño UI/UX",
-    description: "Diseño centrado en el usuario y experiencias intuitivas que deleitan y convierten visitantes.",
+    title: "Diseño de interfaces",
+    description: "Diseñamos pantallas claras para que las personas encuentren lo que necesitan sin complicaciones.",
     iconName: "tabler:palette",
   },
   {
-    title: "Software a Medida",
-    description: "Soluciones empresariales personalizadas diseñadas para optimizar operaciones e impulsar la eficiencia.",
+    title: "Software a medida",
+    description: "Creamos sistemas pensados para la manera en que tu empresa trabaja todos los días.",
     iconName: "tabler:code",
   },
 ];
@@ -55,12 +55,14 @@ export default function Services() {
           className="text-center mb-16"
         >
           <span className="text-accent text-sm font-semibold tracking-wider uppercase">
-            Lo Que Hacemos
+            Nuestros servicios
           </span>
-          <h2 className="mt-3 text-3xl md:text-4xl font-bold">Nuestros Servicios</h2>
+          <h2 className="mt-3 text-3xl md:text-4xl font-bold">
+            Soluciones pensadas para tu negocio
+          </h2>
           <p className="mt-4 text-muted max-w-2xl mx-auto">
-            Ofrecemos servicios de desarrollo de software de principio a fin para ayudarte
-            a construir, escalar y triunfar en el panorama digital.
+            Te ayudamos a crear, mejorar y mantener las herramientas digitales
+            que tu empresa necesita.
           </p>
         </motion.div>
 

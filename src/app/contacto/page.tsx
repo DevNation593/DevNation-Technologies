@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Contacto | DevNation593",
+export const metadata = createPageMetadata({
+  title: "Contacto",
   description:
-    "Contáctanos para discutir tu próximo proyecto de desarrollo de software. Estamos en Quito, Ecuador.",
-};
+    "Cuéntanos qué quieres crear o mejorar. Hablemos de tu próximo proyecto desde Quito para Ecuador y Latinoamérica.",
+  path: "/contacto",
+});
 
 export default function ContactoPage() {
   return (

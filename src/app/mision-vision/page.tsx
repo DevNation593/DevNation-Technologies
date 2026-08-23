@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import MissionVision from "@/components/MissionVision";
 import Footer from "@/components/Footer";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Misión, Visión y Valores | DevNation593",
+export const metadata = createPageMetadata({
+  title: "Misión, visión y valores",
   description:
-    "Conoce la misión, visión y los valores que guían a DevNation593 en el desarrollo de soluciones digitales innovadoras.",
-};
+    "Conoce qué nos mueve, hacia dónde queremos llegar y cómo trabajamos con cada cliente.",
+  path: "/mision-vision",
+});
 
 export default function MisionVisionPage() {
   return (

@@ -5,27 +5,27 @@ import { Icon } from "@iconify/react";
 
 const advantages = [
   {
-    title: "Desarrolladores Experimentados",
+    title: "Un equipo cercano",
     description:
-      "Nuestros ingenieros senior aportan años de experiencia en la industria a través de diversos stacks tecnológicos y dominios.",
+      "Hablas directamente con las personas que trabajan en tu proyecto y conocen cada detalle.",
     iconName: "tabler:users-group",
   },
   {
-    title: "Arquitectura Escalable",
+    title: "Propuestas claras",
     description:
-      "Diseñamos sistemas que crecen con tu negocio, garantizando rendimiento y confiabilidad a cualquier escala.",
-    iconName: "tabler:server-2",
+      "Te explicamos qué haremos, por qué lo recomendamos y cuánto tiempo puede tomar.",
+    iconName: "tabler:adjustments-check",
   },
   {
-    title: "Desarrollo Ágil",
+    title: "Cuidado en cada entrega",
     description:
-      "Sprints iterativos, comunicación transparente y entrega rápida mantienen tu proyecto en marcha.",
-    iconName: "tabler:bolt",
+      "Revisamos cada avance antes de entregarlo para evitar problemas y cuidar los detalles.",
+    iconName: "tabler:shield-check",
   },
   {
-    title: "Enfoque en el Cliente",
+    title: "Comunicación constante",
     description:
-      "Tus objetivos son nuestra prioridad. Escuchamos, nos adaptamos y entregamos soluciones alineadas con tu visión.",
+      "Te contamos cómo avanza el trabajo, qué sigue y si aparece algo que debamos decidir juntos.",
     iconName: "tabler:heart-handshake",
   },
 ];
@@ -42,14 +42,14 @@ export default function WhyChooseUs() {
           className="text-center mb-16"
         >
           <span className="text-accent text-sm font-semibold tracking-wider uppercase">
-            ¿Por Qué Nosotros?
+            Por qué elegirnos
           </span>
           <h2 className="mt-3 text-3xl md:text-4xl font-bold">
-            ¿Por Qué Elegir DevNation593?
+            Trabajamos contigo, no solo para ti
           </h2>
           <p className="mt-4 text-muted max-w-2xl mx-auto">
-            Combinamos excelencia técnica con una mentalidad centrada en el cliente
-            para entregar resultados que superan las expectativas.
+            Queremos que entiendas cada paso, participes en las decisiones y
+            recibas una solución que realmente te sirva.
           </p>
         </motion.div>
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Icon } from "@iconify/react";
+import { legalLinks } from "@/lib/site";
 
 interface LegalLayoutProps {
   title: string;
@@ -42,15 +43,10 @@ export default function LegalLayout({ title, lastUpdated, children }: LegalLayou
         {/* Navigation between legal pages */}
         <div className="mt-16 pt-8 border-t border-border">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-muted mb-4">
-            Documentos Legales
+            Documentos legales
           </h3>
           <div className="grid sm:grid-cols-2 gap-3">
-            {[
-              { href: "/politica-privacidad", label: "Política de Privacidad" },
-              { href: "/terminos-condiciones", label: "Términos y Condiciones" },
-              { href: "/politica-cookies", label: "Política de Cookies" },
-              { href: "/proteccion-datos", label: "Protección de Datos" },
-            ].map((link) => (
+            {legalLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}

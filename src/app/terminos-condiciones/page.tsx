@@ -1,240 +1,230 @@
-import type { Metadata } from "next";
 import LegalLayout from "@/components/LegalLayout";
+import { createPageMetadata } from "@/lib/seo";
+import { siteConfig } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Términos y Condiciones | DevNation593",
+export const metadata = createPageMetadata({
+  title: "Términos y condiciones",
   description:
-    "Términos y condiciones de uso de los servicios de DevNation593. Conoce las condiciones generales de contratación y uso de nuestro sitio web.",
-};
+    "Conoce las reglas para usar el sitio de DevNation593 y contratar nuestros servicios.",
+  path: "/terminos-condiciones",
+  noIndex: true,
+});
 
 export default function TerminosCondiciones() {
   return (
-    <LegalLayout title="Términos y Condiciones" lastUpdated="8 de marzo de 2026">
+    <LegalLayout title="Términos y condiciones" lastUpdated="23 de agosto de 2026">
       <section>
-        <h2>1. Información General</h2>
+        <h2>1. Sobre estos términos</h2>
         <p>
-          Los presentes Términos y Condiciones regulan el acceso y uso del sitio web de{" "}
-          <strong>DevNation593</strong> (en adelante, &quot;la Empresa&quot;), así como la contratación de los servicios
-          de desarrollo de software ofrecidos a través del mismo.
+          Estos términos explican las reglas para usar el sitio web de <strong>DevNation593</strong> y para contratar
+          nuestros servicios de desarrollo de software.
         </p>
         <p>
-          Estos términos se rigen por la legislación de la República del Ecuador, incluyendo la{" "}
+          Se aplican las leyes de Ecuador, entre ellas la{" "}
           <strong>Ley de Comercio Electrónico, Firmas Electrónicas y Mensajes de Datos</strong> (Ley No. 2002-67), el{" "}
           <strong>Código Civil Ecuatoriano</strong>, el <strong>Código de Comercio</strong>, la{" "}
-          <strong>Ley Orgánica de Defensa del Consumidor</strong> y demás normativa aplicable.
+          <strong>Ley Orgánica de Defensa del Consumidor</strong> y las demás normas relacionadas.
         </p>
         <p>
-          Al acceder y utilizar este sitio web, usted acepta estos Términos y Condiciones en su totalidad. Si no está
-          de acuerdo, le solicitamos abstenerse de utilizar nuestros servicios.
+          Al usar el sitio aceptas estos términos. Si no estás de acuerdo, te pedimos que no uses el sitio ni solicites
+          nuestros servicios a través de él.
         </p>
       </section>
 
       <section>
-        <h2>2. Identificación de la Empresa</h2>
+        <h2>2. Quiénes somos</h2>
         <ul>
-          <li><strong>Nombre comercial:</strong> DevNation593</li>
-          <li><strong>Domicilio:</strong> Quito, Ecuador</li>
-          <li><strong>Correo electrónico:</strong> hello@devnation593.com</li>
-          <li><strong>Teléfono:</strong> +593 00 000 0000</li>
+          <li><strong>Nombre comercial:</strong> {siteConfig.name}</li>
+          <li><strong>Domicilio:</strong> {siteConfig.location}</li>
+          <li>
+            <strong>Correo electrónico:</strong>{" "}
+            <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
+          </li>
         </ul>
       </section>
 
       <section>
         <h2>3. Servicios</h2>
-        <p>DevNation593 ofrece los siguientes servicios de desarrollo tecnológico:</p>
+        <p>DevNation593 ofrece los siguientes servicios:</p>
         <ul>
           <li>Desarrollo de aplicaciones web</li>
           <li>Desarrollo de aplicaciones móviles</li>
-          <li>Soluciones en la nube (Cloud)</li>
-          <li>Diseño de interfaces de usuario (UI/UX)</li>
+          <li>Soluciones en la nube</li>
+          <li>Diseño de pantallas y experiencias de uso</li>
           <li>Desarrollo de software a medida</li>
         </ul>
         <p>
-          Las características específicas, plazos de entrega, costos y condiciones particulares de cada servicio serán
-          establecidos en contratos o propuestas individuales acordados entre las partes.
+          Antes de empezar un proyecto acordaremos por escrito qué incluye, cuánto costará, cuánto tiempo tomará y las
+          demás condiciones importantes.
         </p>
       </section>
 
       <section>
-        <h2>4. Condiciones de Contratación</h2>
+        <h2>4. Cómo contratarnos</h2>
 
-        <h3>4.1 Proceso de Contratación</h3>
-        <p>La contratación de servicios se realizará mediante los siguientes pasos:</p>
+        <h3>4.1 Pasos para empezar</h3>
+        <p>Normalmente trabajamos de esta manera:</p>
         <ol>
-          <li>El cliente envía una solicitud de contacto describiendo su proyecto.</li>
-          <li>DevNation593 elabora y envía una propuesta técnica y económica.</li>
-          <li>Ambas partes acuerdan y firman un contrato de prestación de servicios.</li>
-          <li>Se procede con la ejecución del proyecto conforme al cronograma acordado.</li>
+          <li>Nos cuentas qué necesitas.</li>
+          <li>Preparamos una propuesta con el trabajo, el precio y el tiempo estimado.</li>
+          <li>Revisamos los detalles y firmamos un contrato.</li>
+          <li>Empezamos el proyecto siguiendo las fechas acordadas.</li>
         </ol>
 
-        <h3>4.2 Precios y Formas de Pago</h3>
+        <h3>4.2 Precios y pagos</h3>
         <p>
-          Los precios de los servicios serán establecidos en la propuesta económica o contrato correspondiente. Los
-          pagos podrán realizarse mediante transferencia bancaria, depósito o los medios que las partes acuerden. Todos
-          los precios incluirán los impuestos aplicables conforme a la legislación tributaria ecuatoriana.
+          El precio y la forma de pago aparecerán en la propuesta o el contrato. Los pagos podrán hacerse por
+          transferencia, depósito u otro medio acordado. Los impuestos se aplicarán según la ley ecuatoriana.
         </p>
 
-        <h3>4.3 Plazos de Entrega</h3>
+        <h3>4.3 Fechas de entrega</h3>
         <p>
-          Los plazos de entrega serán acordados en el contrato de prestación de servicios. DevNation593 se compromete a
-          cumplir los plazos establecidos, salvo causas de fuerza mayor debidamente justificadas conforme al Art. 30
-          del Código Civil Ecuatoriano.
+          Las fechas se definirán en el contrato. Haremos lo posible por cumplirlas, excepto cuando ocurra una situación
+          fuera de nuestro control o cuando ambas partes acuerden un cambio.
         </p>
       </section>
 
       <section>
-        <h2>5. Propiedad Intelectual</h2>
+        <h2>5. Propiedad intelectual</h2>
         <p>
-          De conformidad con la <strong>Ley Orgánica de la Economía Naranja</strong> y el{" "}
-          <strong>Código Orgánico de la Economía Social de los Conocimientos (COESC - Código Ingenios)</strong>:
+          El contenido del sitio y el trabajo realizado en cada proyecto están protegidos por las leyes ecuatorianas
+          de propiedad intelectual. Se aplican las siguientes reglas:
         </p>
         <ul>
           <li>
-            Todo el contenido del sitio web de DevNation593 (textos, gráficos, logotipos, imágenes, código fuente,
-            diseños) está protegido por derechos de propiedad intelectual y pertenece a DevNation593.
+            Los textos, gráficos, logotipos, imágenes, diseños y código del sitio pertenecen a DevNation593, salvo que
+            se indique lo contrario.
           </li>
           <li>
-            Los derechos de propiedad intelectual sobre los productos desarrollados para el cliente serán transferidos a
-            este una vez completado el pago total del servicio, salvo acuerdo en contrario.
+            Los derechos sobre el trabajo creado para un cliente se entregarán cuando se complete el pago, salvo que el
+            contrato indique algo diferente.
           </li>
           <li>
-            DevNation593 se reserva el derecho de utilizar los proyectos realizados como referencia en su portafolio,
-            salvo acuerdo de confidencialidad.
+            Podemos mostrar un proyecto en nuestro portafolio, excepto cuando exista un acuerdo de confidencialidad.
           </li>
           <li>
-            Queda prohibida la reproducción, distribución o modificación del contenido del sitio web sin autorización
-            expresa y por escrito de DevNation593.
+            No se puede copiar, publicar o modificar el contenido del sitio sin nuestro permiso escrito.
           </li>
         </ul>
       </section>
 
       <section>
-        <h2>6. Obligaciones del Usuario</h2>
-        <p>El usuario se compromete a:</p>
+        <h2>6. Uso responsable del sitio</h2>
+        <p>Al usar el sitio te comprometes a:</p>
         <ul>
-          <li>Proporcionar información veraz, actualizada y completa.</li>
-          <li>No utilizar el sitio web para fines ilícitos o contrarios a la legislación ecuatoriana.</li>
-          <li>No intentar acceder de forma no autorizada a sistemas, datos o redes de DevNation593.</li>
-          <li>No introducir virus, malware o cualquier código malicioso.</li>
-          <li>Respetar los derechos de propiedad intelectual de DevNation593 y terceros.</li>
+          <li>Compartir información verdadera y actualizada.</li>
+          <li>No usarlo para actividades ilegales.</li>
+          <li>No intentar entrar sin permiso a nuestros sistemas o datos.</li>
+          <li>No enviar virus ni archivos dañinos.</li>
+          <li>Respetar nuestros derechos y los de otras personas.</li>
           <li>
-            No reproducir, duplicar ni explotar con fines comerciales ninguna parte del sitio web sin autorización.
+            No copiar ni usar comercialmente el contenido sin permiso.
           </li>
         </ul>
       </section>
 
       <section>
-        <h2>7. Garantías y Responsabilidades</h2>
+        <h2>7. Garantías y responsabilidades</h2>
 
-        <h3>7.1 Garantía de Servicios</h3>
+        <h3>7.1 Garantía del trabajo</h3>
         <p>
-          DevNation593 garantiza la calidad técnica de los servicios prestados. Se ofrecerá un período de garantía
-          contra defectos de software según lo estipulado en cada contrato individual, conforme a la{" "}
+          Revisaremos y corregiremos los problemas incluidos en la garantía definida en cada contrato, conforme a la{" "}
           <strong>Ley Orgánica de Defensa del Consumidor</strong>.
         </p>
 
-        <h3>7.2 Limitación de Responsabilidad</h3>
-        <p>DevNation593 no será responsable por:</p>
+        <h3>7.2 Límites de responsabilidad</h3>
+        <p>No podemos hacernos responsables por:</p>
         <ul>
-          <li>Daños indirectos, incidentales o consecuentes derivados del uso del sitio web.</li>
-          <li>Interrupciones del servicio causadas por factores externos o fuerza mayor.</li>
-          <li>Uso inadecuado del software desarrollado por parte del cliente.</li>
-          <li>Contenido de sitios web de terceros enlazados desde nuestro sitio.</li>
+          <li>Daños indirectos causados por el uso del sitio.</li>
+          <li>Interrupciones causadas por hechos fuera de nuestro control.</li>
+          <li>Problemas causados por un uso incorrecto del sistema entregado.</li>
+          <li>El contenido o funcionamiento de otros sitios enlazados.</li>
         </ul>
 
-        <h3>7.3 Disponibilidad del Sitio Web</h3>
+        <h3>7.3 Disponibilidad del sitio</h3>
         <p>
-          DevNation593 se esfuerza por mantener el sitio web disponible de forma continua, pero no garantiza la
-          disponibilidad ininterrumpida del mismo. Podrán realizarse labores de mantenimiento que requieran la
-          suspensión temporal del servicio.
+          Procuramos mantener el sitio disponible, pero puede dejar de funcionar temporalmente por mantenimiento o por
+          situaciones fuera de nuestro control.
         </p>
       </section>
 
       <section>
         <h2>8. Confidencialidad</h2>
         <p>
-          Ambas partes se comprometen a mantener la confidencialidad de la información intercambiada durante la
-          relación comercial. Esta obligación subsistirá incluso después de terminada la relación contractual, conforme
-          a lo establecido en el contrato de prestación de servicios.
+          Ambas partes deben cuidar la información privada que compartan durante el proyecto. Esta obligación continúa
+          después de terminar el trabajo, según lo acordado en el contrato.
         </p>
       </section>
 
       <section>
-        <h2>9. Cancelación y Resolución</h2>
+        <h2>9. Cancelación</h2>
         <ul>
           <li>
-            El cliente podrá cancelar un servicio contratado notificándolo por escrito. Las condiciones de reembolso
-            dependerán del avance del proyecto y se regirán por lo estipulado en el contrato.
+            El cliente puede cancelar un servicio avisando por escrito. La posibilidad de un reembolso dependerá del
+            avance del trabajo y de lo indicado en el contrato.
           </li>
           <li>
-            DevNation593 podrá resolver el contrato en caso de incumplimiento por parte del cliente, previo aviso por
-            escrito.
+            DevNation593 puede terminar el contrato si el cliente no cumple lo acordado, después de avisarle por escrito.
           </li>
           <li>
-            En caso de cancelación, el cliente deberá pagar por el trabajo efectivamente realizado hasta la fecha de
-            cancelación.
+            El cliente deberá pagar el trabajo realizado hasta la fecha de cancelación.
           </li>
         </ul>
       </section>
 
       <section>
-        <h2>10. Protección de Datos Personales</h2>
+        <h2>10. Datos personales</h2>
         <p>
-          El tratamiento de datos personales se realizará conforme a nuestra{" "}
-          <a href="/politica-privacidad">Política de Privacidad</a> y a la{" "}
-          <strong>Ley Orgánica de Protección de Datos Personales (LOPDP)</strong> del Ecuador. Para más información,
-          consulte nuestra <a href="/proteccion-datos">Política de Protección de Datos</a>.
+          Usaremos tus datos según nuestra{" "}
+          <a href="/politica-privacidad">Política de privacidad y protección de datos</a> y la{" "}
+          <strong>Ley Orgánica de Protección de Datos Personales (LOPDP)</strong> del Ecuador.
         </p>
       </section>
 
       <section>
-        <h2>11. Legislación Aplicable y Jurisdicción</h2>
+        <h2>11. Ley aplicable y solución de desacuerdos</h2>
         <p>
-          Los presentes Términos y Condiciones se rigen por las leyes de la República del Ecuador. Para la resolución
-          de cualquier controversia derivada de estos términos, las partes se someterán a:
+          Estos términos se rigen por las leyes de Ecuador. Si surge un desacuerdo, seguiremos este orden:
         </p>
         <ol>
           <li>
-            <strong>Mediación:</strong> Como primera instancia, se intentará resolver la controversia mediante
-            mediación en un centro autorizado por el Consejo de la Judicatura.
+            <strong>Mediación:</strong> Primero intentaremos llegar a un acuerdo con ayuda de un centro autorizado.
           </li>
           <li>
-            <strong>Arbitraje:</strong> En caso de no llegar a un acuerdo, las partes podrán someter la controversia a
-            arbitraje conforme a la <strong>Ley de Arbitraje y Mediación</strong> del Ecuador.
+            <strong>Arbitraje:</strong> Si no hay acuerdo, las partes podrán acudir a arbitraje según la ley ecuatoriana.
           </li>
           <li>
-            <strong>Jurisdicción ordinaria:</strong> Subsidiariamente, serán competentes los jueces y tribunales de la
-            ciudad de Quito, Ecuador.
+            <strong>Vía judicial:</strong> Como última opción, el caso podrá presentarse ante los jueces de Quito, Ecuador.
           </li>
         </ol>
       </section>
 
       <section>
-        <h2>12. Nulidad Parcial</h2>
+        <h2>12. Si una parte no puede aplicarse</h2>
         <p>
-          Si alguna disposición de estos Términos y Condiciones fuera declarada nula o ineficaz por autoridad
-          competente, las demás disposiciones continuarán en pleno vigor y efecto.
+          Si una autoridad determina que una parte de estos términos no es válida, las demás partes seguirán vigentes.
         </p>
       </section>
 
       <section>
         <h2>13. Modificaciones</h2>
         <p>
-          DevNation593 se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento. Las
-          modificaciones entrarán en vigor desde su publicación en el sitio web. El uso continuado del sitio web
-          después de dichas modificaciones implica la aceptación de los nuevos términos.
+          Podemos actualizar estos términos cuando sea necesario. La nueva versión se aplicará desde que sea publicada
+          en el sitio.
         </p>
       </section>
 
       <section>
         <h2>14. Contacto</h2>
         <p>
-          Para consultas sobre estos Términos y Condiciones, puede contactarnos a través de:
+          Si tienes una pregunta sobre estos términos, puedes escribirnos a:
         </p>
         <ul>
-          <li><strong>Correo electrónico:</strong> <a href="mailto:hello@devnation593.com">hello@devnation593.com</a></li>
-          <li><strong>Teléfono:</strong> +593 00 000 0000</li>
-          <li><strong>Dirección:</strong> Quito, Ecuador</li>
+          <li>
+            <strong>Correo electrónico:</strong>{" "}
+            <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
+          </li>
+          <li><strong>Dirección:</strong> {siteConfig.location}</li>
         </ul>
       </section>
     </LegalLayout>
