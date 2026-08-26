@@ -11,7 +11,7 @@ const services = [
   },
   {
     title: "Desarrollo móvil",
-    description: "Desarrollamos aplicaciones para iPhone y Android que funcionan de forma rápida y sencilla.",
+    description: "Desarrollamos aplicaciones para iOS y Android que funcionan de forma rápida y sencilla.",
     iconName: "tabler:device-mobile",
   },
   {
