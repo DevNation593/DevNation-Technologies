@@ -14,7 +14,7 @@ export default function PoliticaPrivacidad() {
   return (
     <LegalLayout
       title="Política de privacidad y protección de datos"
-      lastUpdated="23 de agosto de 2026"
+      lastUpdated="12 de octubre de 2026"
     >
       <section>
         <h2>1. Alcance</h2>
@@ -23,7 +23,7 @@ export default function PoliticaPrivacidad() {
           usamos y cómo la cuidamos.
         </p>
         <p>
-          En <strong>DevNation593</strong> cuidamos tus datos y cumplimos con la{" "}
+          En <strong>{siteConfig.name}</strong> cuidamos tus datos y cumplimos con la{" "}
           <a
             href="https://www.registroficial.gob.ec/quinto-suplemento-al-registro-oficial-no-459/"
             target="_blank"
@@ -59,11 +59,18 @@ export default function PoliticaPrivacidad() {
         <h3>3.2 Datos básicos de navegación</h3>
         <p>
           Las empresas que nos ayudan a mantener el sitio en línea y seguro pueden guardar datos básicos, como la
-          dirección IP, el navegador y la fecha de visita. DevNation593 no usa herramientas para medir tu actividad,
-          mostrar publicidad personalizada ni crear perfiles sobre ti.
+          dirección IP, el navegador y la fecha de visita. No mostramos publicidad personalizada ni creamos perfiles sobre ti.
+        </p>
+
+        <h3>3.3 Medición de visitas</h3>
+        <p>
+          Si aceptas las cookies de medición, usamos Google Analytics para saber cuántas personas visitan el sitio, qué
+          páginas ven y desde qué país o tipo de dispositivo lo hacen. Google recibe esos datos mediante cookies; no los
+          usamos para identificarte y tenemos desactivadas sus funciones publicitarias. Si las rechazas, Google
+          Analytics no se carga.
         </p>
         <p>
-          Actualmente tampoco usamos cookies propias. Puedes leer más en nuestra{" "}
+          También usamos una cookie propia, necesaria para recordar tu decisión. Puedes leer más en nuestra{" "}
           <a href="/politica-cookies">Política de cookies</a>.
         </p>
       </section>
@@ -75,6 +82,7 @@ export default function PoliticaPrivacidad() {
           <li>Responder tus preguntas y preparar una cotización.</li>
           <li>Prestar nuestros servicios cuando decides trabajar con nosotros.</li>
           <li>Mantener el sitio disponible y seguro.</li>
+          <li>Saber cómo se usa el sitio para mejorarlo, solo si aceptas las cookies de medición.</li>
           <li>Cumplir la ley cuando sea necesario.</li>
         </ul>
         <p>
@@ -88,7 +96,8 @@ export default function PoliticaPrivacidad() {
         <h2>5. Con quién podemos compartirla</h2>
         <p>
           No vendemos tus datos. Solo pueden acceder a ellos las empresas que nos ayudan con el alojamiento del sitio,
-          la seguridad y el correo. Algunas pueden trabajar fuera de Ecuador; si esto ocurre, cuidaremos que se cumplan
+          la seguridad y el correo, y Google, que nos presta el servicio de medición de visitas cuando lo aceptas.
+          Algunas pueden trabajar fuera de Ecuador; si esto ocurre, cuidaremos que se cumplan
           las medidas de protección exigidas por la ley.
         </p>
       </section>
@@ -100,6 +109,10 @@ export default function PoliticaPrivacidad() {
           nuestras obligaciones legales. Los datos básicos de navegación se guardan durante el plazo definido por las
           empresas que mantienen el sitio. Después se eliminan o dejan de poder relacionarse contigo.
         </p>
+        <p>
+          Los datos de medición se guardan en Google Analytics por un máximo de 14 meses. Sus cookies duran hasta 2
+          años, salvo que las borres o retires tu permiso antes.
+        </p>
       </section>
 
       <section>
@@ -108,6 +121,10 @@ export default function PoliticaPrivacidad() {
           Puedes pedirnos que te digamos qué datos tenemos, que los corrijamos, actualicemos, eliminemos, dejemos de
           usarlos o te entreguemos una copia. También puedes oponerte a decisiones tomadas únicamente por sistemas
           automáticos; este sitio no toma ese tipo de decisiones.
+        </p>
+        <p>
+          Puedes retirar tu permiso para las cookies de medición en cualquier momento desde el enlace «Preferencias de
+          cookies», al pie del sitio.
         </p>
         <p>
           Para pedirlo, escribe a <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>, dinos qué necesitas e

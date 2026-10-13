@@ -29,7 +29,7 @@ export default function Navbar() {
     >
       <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
         <Link href="/" className="text-xl font-bold tracking-tight">
-          Dev<span className="text-accent">Nation</span>593
+          Dev<span className="text-accent">Nation</span> Technologies
         </Link>
 
         {/* Desktop */}

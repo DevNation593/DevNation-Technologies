@@ -97,7 +97,7 @@ export default function MissionVision() {
               <div className="w-12 h-12 bg-accent/10 text-accent rounded-xl flex items-center justify-center shrink-0">
                 <Icon icon="tabler:target-arrow" className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold">Nuestra misión</h3>
+              <h2 className="text-xl font-bold">Nuestra misión</h2>
             </div>
             <p className="text-muted leading-relaxed">
               Ayudar a empresas y emprendimientos de Ecuador y Latinoamérica a
@@ -120,7 +120,7 @@ export default function MissionVision() {
               <div className="w-12 h-12 bg-accent/10 text-accent rounded-xl flex items-center justify-center shrink-0">
                 <Icon icon="tabler:eye" className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold">Nuestra visión</h3>
+              <h2 className="text-xl font-bold">Nuestra visión</h2>
             </div>
             <p className="text-muted leading-relaxed">
               Convertirnos en un equipo de confianza para empresas de Ecuador y la
@@ -138,9 +138,9 @@ export default function MissionVision() {
           transition={{ duration: 0.6 }}
           className="text-center mb-10"
         >
-          <h3 className="text-2xl md:text-3xl font-bold">
+          <h2 className="text-2xl md:text-3xl font-bold">
             Nuestros <span className="text-accent">valores</span>
-          </h3>
+          </h2>
           <p className="mt-3 text-muted max-w-xl mx-auto">
             Las ideas que ponemos en práctica cada día y en cada proyecto.
           </p>
@@ -163,7 +163,7 @@ export default function MissionVision() {
               <div className="w-11 h-11 bg-accent/10 text-accent rounded-xl flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
                 <Icon icon={value.iconName} className="w-6 h-6" />
               </div>
-              <h4 className="text-lg font-semibold mb-2">{value.title}</h4>
+              <h3 className="text-lg font-semibold mb-2">{value.title}</h3>
               <p className="text-muted text-sm leading-relaxed">
                 {value.description}
               </p>

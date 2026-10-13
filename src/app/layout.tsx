@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import CookieConsent from "@/components/CookieConsent";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
@@ -91,7 +92,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        <CookieConsent />
+      </body>
     </html>
   );
 }

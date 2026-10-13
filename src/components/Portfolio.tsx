@@ -69,7 +69,7 @@ export default function Portfolio() {
                   backgroundSize: "24px 24px"
                 }} />
                 <div className="relative text-3xl font-bold text-white/30 group-hover:text-white/50 transition-colors">
-                  {project.title.charAt(0)}{project.title.split(" ")[1]?.charAt(0) || ""}
+                  {(project.title.charAt(0) + (project.title.split(" ")[1]?.charAt(0) || "")).toUpperCase()}
                 </div>
               </div>
 
