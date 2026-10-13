@@ -168,7 +168,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <p className="text-sm font-medium">LinkedIn</p>
-                  <p className="text-muted text-sm">DevNation593</p>
+                  <p className="text-muted text-sm">{siteConfig.name}</p>
                 </div>
               </a>
 
