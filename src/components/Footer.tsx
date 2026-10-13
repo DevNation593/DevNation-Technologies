@@ -2,6 +2,7 @@
 
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import CookiePreferencesButton from "@/components/CookiePreferencesButton";
 import {
   legalLinks,
   navigationLinks,
@@ -27,7 +28,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr] gap-10">
           <div>
             <Link href="/" className="text-xl font-bold tracking-tight">
-              Dev<span className="text-accent">Nation</span>593
+              Dev<span className="text-accent">Nation</span> Technologies
             </Link>
             <p className="mt-3 text-muted text-sm leading-relaxed max-w-xs">
               Somos un equipo de Quito que crea páginas, aplicaciones y sistemas pensados para cada negocio.
@@ -92,6 +93,11 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <CookiePreferencesButton className="text-muted text-sm hover:text-white transition-colors cursor-pointer">
+                  Preferencias de cookies
+                </CookiePreferencesButton>
+              </li>
             </ul>
 
             <h2 className="text-sm font-semibold uppercase tracking-wider mt-8 mb-4">

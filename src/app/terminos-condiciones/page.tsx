@@ -5,18 +5,18 @@ import { siteConfig } from "@/lib/site";
 export const metadata = createPageMetadata({
   title: "Términos y condiciones",
   description:
-    "Conoce las reglas para usar el sitio de DevNation593 y contratar nuestros servicios.",
+    `Conoce las reglas para usar el sitio de ${siteConfig.name} y contratar nuestros servicios.`,
   path: "/terminos-condiciones",
   noIndex: true,
 });
 
 export default function TerminosCondiciones() {
   return (
-    <LegalLayout title="Términos y condiciones" lastUpdated="23 de agosto de 2026">
+    <LegalLayout title="Términos y condiciones" lastUpdated="12 de octubre de 2026">
       <section>
         <h2>1. Sobre estos términos</h2>
         <p>
-          Estos términos explican las reglas para usar el sitio web de <strong>DevNation593</strong> y para contratar
+          Estos términos explican las reglas para usar el sitio web de <strong>{siteConfig.name}</strong> y para contratar
           nuestros servicios de desarrollo de software.
         </p>
         <p>
@@ -45,7 +45,7 @@ export default function TerminosCondiciones() {
 
       <section>
         <h2>3. Servicios</h2>
-        <p>DevNation593 ofrece los siguientes servicios:</p>
+        <p>{siteConfig.name} ofrece los siguientes servicios:</p>
         <ul>
           <li>Desarrollo de aplicaciones web</li>
           <li>Desarrollo de aplicaciones móviles</li>
@@ -92,7 +92,7 @@ export default function TerminosCondiciones() {
         </p>
         <ul>
           <li>
-            Los textos, gráficos, logotipos, imágenes, diseños y código del sitio pertenecen a DevNation593, salvo que
+            Los textos, gráficos, logotipos, imágenes, diseños y código del sitio pertenecen a {siteConfig.name}, salvo que
             se indique lo contrario.
           </li>
           <li>
@@ -164,7 +164,7 @@ export default function TerminosCondiciones() {
             avance del trabajo y de lo indicado en el contrato.
           </li>
           <li>
-            DevNation593 puede terminar el contrato si el cliente no cumple lo acordado, después de avisarle por escrito.
+            {siteConfig.name} puede terminar el contrato si el cliente no cumple lo acordado, después de avisarle por escrito.
           </li>
           <li>
             El cliente deberá pagar el trabajo realizado hasta la fecha de cancelación.

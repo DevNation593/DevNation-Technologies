@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { Icon } from "@iconify/react";
-import { legalLinks } from "@/lib/site";
+import CookiePreferencesButton from "@/components/CookiePreferencesButton";
+import { legalLinks, siteConfig } from "@/lib/site";
 
 interface LegalLayoutProps {
   title: string;
@@ -17,7 +18,7 @@ export default function LegalLayout({ title, lastUpdated, children }: LegalLayou
       <header className="bg-primary border-b border-border">
         <div className="mx-auto max-w-4xl px-6 py-6 flex items-center justify-between">
           <Link href="/" className="text-xl font-bold tracking-tight">
-            Dev<span className="text-accent">Nation</span>593
+            Dev<span className="text-accent">Nation</span> Technologies
           </Link>
           <Link
             href="/"
@@ -64,11 +65,16 @@ export default function LegalLayout({ title, lastUpdated, children }: LegalLayou
       <footer className="border-t border-border bg-primary">
         <div className="mx-auto max-w-4xl px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-muted text-sm">
-            &copy; {new Date().getFullYear()} DevNation593. Todos los derechos reservados.
+            &copy; {new Date().getFullYear()} {siteConfig.name}. Todos los derechos reservados.
           </p>
-          <Link href="/" className="text-sm text-accent hover:text-accent-hover transition-colors">
-            devnation593.com
-          </Link>
+          <div className="flex items-center gap-6">
+            <CookiePreferencesButton className="text-sm text-muted hover:text-white transition-colors cursor-pointer">
+              Preferencias de cookies
+            </CookiePreferencesButton>
+            <Link href="/" className="text-sm text-accent hover:text-accent-hover transition-colors">
+              {new URL(siteConfig.url).host}
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

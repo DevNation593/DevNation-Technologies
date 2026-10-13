@@ -49,7 +49,8 @@ export function createSocialImage() {
           }}
         >
           <div style={{ display: "flex", fontSize: 34, fontWeight: 700 }}>
-            Dev<span style={{ color: "#3b82f6" }}>Nation</span>593
+            Dev<span style={{ color: "#3b82f6" }}>Nation</span>
+            <span style={{ marginLeft: 10 }}>Technologies</span>
           </div>
           <div
             style={{
