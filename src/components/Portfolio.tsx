@@ -1,8 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Icon } from "@iconify/react";
 
-const projects = [
+interface Project {
+  title: string;
+  description: string;
+  technologies: string[];
+  gradient: string;
+  url?: string;
+}
+
+const projects: Project[] = [
   {
     title: "FinTrack Pro",
     description:
@@ -18,11 +27,12 @@ const projects = [
     gradient: "from-emerald-600/20 to-teal-600/20",
   },
   {
-    title: "Sistema para consultorios psicológicos",
+    title: "HCX Care",
     description:
-      "Una herramienta para organizar sesiones, guardar expedientes, planificar terapias y dar seguimiento al progreso de cada paciente.",
+      "Una plataforma para consultorios de salud que organiza citas por especialidad y profesional, guarda la historia clínica de cada paciente y emite facturas electrónicas desde un solo lugar.",
     technologies: ["React", "TailwindCSS", "PostgreSQL", "AWS"],
     gradient: "from-purple-600/20 to-pink-600/20",
+    url: "https://clinicsdev.netlify.app",
   },
 ];
 
@@ -88,6 +98,18 @@ export default function Portfolio() {
                     </span>
                   ))}
                 </div>
+                {project.url && (
+                  <a
+                    href={project.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:text-accent-hover transition-colors"
+                  >
+                    Ver proyecto
+                    <Icon icon="tabler:external-link" className="w-4 h-4" aria-hidden="true" />
+                    <span className="sr-only"> {project.title} (se abre en una pestaña nueva)</span>
+                  </a>
+                )}
               </div>
             </motion.div>
           ))}
