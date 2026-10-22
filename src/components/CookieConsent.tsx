@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Script from "next/script";
 import {
   type CookieConsentChoice,
@@ -42,6 +43,10 @@ function choose(choice: CookieConsentChoice) {
 export default function CookieConsent() {
   const consent = useCookieConsent();
   const preferencesOpen = useCookiePreferencesOpen();
+  const pathname = usePathname();
+
+  // El panel administrativo no carga analítica ni muestra el aviso.
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <>
