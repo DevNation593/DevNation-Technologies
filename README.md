@@ -19,6 +19,51 @@ Copia `.env.example` como `.env.local` y define:
 
 Antes de publicar, verifica también que el dominio y el buzón configurado en `src/lib/site.ts` tengan DNS activo.
 
+## Panel administrativo (`/admin`)
+
+Facturación electrónica SRI, cotizaciones (proformas), contratos y clientes. Los datos viven en Supabase y solo
+acceden los usuarios dados de alta por comando (no hay registro público).
+
+### Base de datos
+
+1. Crea un proyecto en Supabase y aplica la migración de `supabase/migrations/`:
+   ```bash
+   npx supabase link --project-ref TU_PROJECT_REF
+   npx supabase db push
+   ```
+2. En el panel de Supabase, **Authentication → Sign In / Providers**, desactiva *Allow new users to sign up*.
+3. Define en `.env.local` (y en el hosting) `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+   `SUPABASE_SECRET_KEY` solo se usa en tu equipo para los comandos de usuarios; no la subas al hosting.
+
+Para desarrollo local, `npx supabase start` levanta Supabase en Docker con la misma migración; `npx supabase status`
+muestra la URL y las claves.
+
+### Usuarios
+
+```bash
+npm run admin:create-user -- --email ana@devnation.tech --name "Ana Pérez"
+npm run admin:list-users
+npm run admin:remove-user -- --email ana@devnation.tech
+```
+
+`admin:create-user` pide la contraseña por consola (mínimo 10 caracteres); si el usuario ya existe, la actualiza.
+
+### Facturación electrónica
+
+1. En **Configuración** completa RUC, razón social, dirección matriz, régimen, establecimiento y punto de emisión.
+2. Configura la firma electrónica `.p12` en variables de entorno del servidor:
+   - `SRI_P12_PATH` (ruta local) o `SRI_P12_BASE64` (contenido del archivo en base64, recomendado en Vercel):
+     `base64 -w0 firma.p12`
+   - `SRI_P12_PASSWORD`
+3. Emite primero en ambiente de **pruebas**. Cuando el SRI habilite tu RUC en producción, cambia el ambiente en
+   Configuración; si ya emitiste facturas en otro sistema, ajusta el próximo secuencial.
+
+Flujo de emisión: se asigna el secuencial y la clave de acceso, se genera el XML (factura v1.1.0), se firma con
+XAdES-BES y se envía a recepción; luego se consulta la autorización. Si el SRI **devuelve** el comprobante se corrige y
+se reenvía con la misma clave; si queda **no autorizado** se reemite con un número nuevo. Una factura autorizada no se
+puede editar ni borrar: solo marcarse como anulada (la anulación se solicita en el portal del SRI). El RIDE se imprime
+o guarda como PDF desde el navegador y el XML autorizado se descarga desde la factura.
+
 ## Validación
 
 ```bash

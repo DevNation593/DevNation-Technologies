@@ -6,23 +6,34 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "admin:create-user": "node --env-file-if-exists=.env.local scripts/admin-users.mjs create",
+    "admin:list-users": "node --env-file-if-exists=.env.local scripts/admin-users.mjs list",
+    "admin:remove-user": "node --env-file-if-exists=.env.local scripts/admin-users.mjs remove"
   },
   "dependencies": {
     "@iconify/react": "^6.0.2",
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "2.118.0",
+    "fast-xml-parser": "5.11.2",
     "framer-motion": "^12.35.1",
+    "jsbarcode": "3.12.3",
     "next": "16.1.6",
+    "node-forge": "1.4.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "server-only": "0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/node-forge": "1.3.14",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "supabase": "2.121.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

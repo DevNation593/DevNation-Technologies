@@ -34,6 +34,14 @@ const projects: Project[] = [
     gradient: "from-purple-600/20 to-pink-600/20",
     url: "https://clinicsdev.netlify.app",
   },
+  {
+    title: "Emite Fácil",
+    description:
+      "Una plataforma de facturación electrónica para Ecuador que emite, firma y envía los comprobantes al SRI, genera el RIDE y lo entrega al cliente por correo. Otros sistemas pueden conectarse por API.",
+    technologies: ["Java", "Spring Boot", "Next.js", "PostgreSQL"],
+    gradient: "from-amber-600/20 to-orange-600/20",
+    url: "https://emitefacil.netlify.app",
+  },
 ];
 
 export default function Portfolio() {
@@ -59,7 +67,7 @@ export default function Portfolio() {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {projects.map((project, i) => (
             <motion.div
               key={project.title}
