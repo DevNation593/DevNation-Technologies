@@ -14,7 +14,7 @@ Solo la rama `main` (la versión desplegada en producción) recibe correcciones 
 **No abras un issue público** para reportar una vulnerabilidad.
 
 1. Usa el reporte privado de GitHub: pestaña **Security → Report a vulnerability** de este repositorio
-   ([enlace directo](https://github.com/DevNation593/DevNation593/security/advisories/new)).
+   ([enlace directo](https://github.com/DevNation593/DevNation-Technologies/security/advisories/new)).
 2. Si no puedes usar GitHub, escribe a **contacto@devnation.tech** con el asunto `[SEGURIDAD]`.
 
 Incluye, en la medida de lo posible: la ruta o componente afectado, los pasos para reproducirlo, el impacto que
