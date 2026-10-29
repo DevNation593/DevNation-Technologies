@@ -25,8 +25,16 @@ export async function proxy(request: NextRequest) {
 
   // getClaims valida el JWT y refresca la sesión cuando es necesario.
   const { data } = await supabase.auth.getClaims();
-  const isLoggedIn = Boolean(data?.claims?.sub);
+  let isLoggedIn = Boolean(data?.claims?.sub);
   const isLoginPage = request.nextUrl.pathname === LOGIN_PATH;
+
+  // requireAdmin manda aquí a quien tiene sesión pero no es administrador. Un Server
+  // Component no puede borrar cookies, así que se cierra la sesión en el proxy; si no,
+  // la sesión seguiría viva y el login lo devolvería a /admin en un bucle infinito.
+  if (isLoggedIn && isLoginPage && request.nextUrl.searchParams.has("error")) {
+    await supabase.auth.signOut({ scope: "local" });
+    isLoggedIn = false;
+  }
 
   if (!isLoggedIn && !isLoginPage) {
     const loginUrl = request.nextUrl.clone();
