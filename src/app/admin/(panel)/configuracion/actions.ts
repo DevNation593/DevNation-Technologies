@@ -1,12 +1,17 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { adminClient } from "@/lib/admin/auth";
+import { adminClient, requireAdmin } from "@/lib/admin/auth";
+import { dateInEcuador, formatDate } from "@/lib/admin/format";
 import { actionError, text, type ActionResult } from "@/lib/admin/server";
 import type { CompanySettings } from "@/lib/admin/types";
 import { regimes } from "@/lib/sri/catalogs";
+import { encryptSecret } from "@/lib/sri/crypto";
+import { parseP12 } from "@/lib/sri/p12";
 
 const MAX_LOGO_LENGTH = 400_000;
+const MAX_P12_BYTES = 50 * 1024;
+const MAX_P12_PASSWORD_LENGTH = 200;
 
 export async function saveSettings(input: CompanySettings): Promise<ActionResult<object>> {
   try {
@@ -83,6 +88,88 @@ export async function setNextInvoiceSequential(
       .upsert({ key, last_value: next - 1, updated_at: new Date().toISOString() });
     if (error) throw error;
     revalidatePath("/admin/configuracion");
+    return { ok: true };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+/**
+ * Guarda la firma electrónica (.p12 y contraseña) cifradas con SRI_ENCRYPTION_KEY.
+ * Ni el archivo ni la contraseña vuelven al navegador.
+ */
+export async function uploadCertificate(
+  formData: FormData,
+): Promise<ActionResult<{ subject: string; validTo: string }>> {
+  try {
+    const supabase = await adminClient();
+    const admin = await requireAdmin();
+
+    const file = formData.get("p12");
+    if (!(file instanceof File) || file.size === 0) {
+      throw new Error("Selecciona el archivo .p12 de tu firma electrónica.");
+    }
+    if (!/\.(p12|pfx)$/i.test(file.name) || file.size > MAX_P12_BYTES) {
+      throw new Error("El archivo debe ser .p12 o .pfx de máximo 50 KB.");
+    }
+    // La contraseña se usa tal cual: puede empezar o terminar con espacios.
+    const rawPassword = formData.get("password");
+    const password = typeof rawPassword === "string" ? rawPassword : "";
+    if (!password || password.length > MAX_P12_PASSWORD_LENGTH) {
+      throw new Error("Escribe la contraseña de la firma (máximo 200 caracteres).");
+    }
+
+    const der = Buffer.from(await file.arrayBuffer());
+    const certificate = parseP12(der, password);
+    const validTo = certificate.validTo.toISOString();
+    if (certificate.validTo.getTime() < Date.now()) {
+      throw new Error(`La firma electrónica ya caducó el ${formatDate(dateInEcuador(validTo))}. Sube una vigente.`);
+    }
+
+    const { error } = await supabase.from("sri_certificates").upsert(
+      {
+        id: 1,
+        p12_encrypted: encryptSecret(der, "sri_certificates.p12"),
+        password_encrypted: encryptSecret(Buffer.from(password, "utf8"), "sri_certificates.password"),
+        subject: certificate.subject,
+        issuer: certificate.issuer,
+        serial_number: certificate.serialNumber,
+        valid_from: certificate.validFrom.toISOString(),
+        valid_to: validTo,
+        uploaded_at: new Date().toISOString(),
+        uploaded_by: admin.userId,
+        notified_days: [],
+        pending_alert_request_id: null,
+        pending_alert_day: null,
+      },
+      { onConflict: "id" },
+    );
+    if (error) throw new Error("No se pudo guardar la firma electrónica.");
+    revalidatePath("/admin", "layout");
+    return { ok: true, subject: certificate.subject, validTo };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function removeCertificate(): Promise<ActionResult<object>> {
+  try {
+    const supabase = await adminClient();
+    const { error } = await supabase.from("sri_certificates").delete().eq("id", 1);
+    if (error) throw new Error("No se pudo quitar la firma electrónica.");
+    revalidatePath("/admin", "layout");
+    return { ok: true };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+/** Envía un correo de prueba con Resend (configurado en Supabase Vault) a todos los administradores. */
+export async function sendCertificateTestEmail(): Promise<ActionResult<object>> {
+  try {
+    const supabase = await adminClient();
+    const { error } = await supabase.rpc("send_certificate_test_email");
+    if (error) throw error;
     return { ok: true };
   } catch (error) {
     return actionError(error);

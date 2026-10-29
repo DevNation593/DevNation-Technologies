@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import PageHeader from "@/components/admin/PageHeader";
 import { requireAdmin } from "@/lib/admin/auth";
-import { formatDate } from "@/lib/admin/format";
+import { dateInEcuador, formatDate } from "@/lib/admin/format";
 import { getCompanySettings } from "@/lib/admin/server";
 import { getCertificateStatus } from "@/lib/sri/certificate";
 import { createClient } from "@/lib/supabase/server";
+import CertificateForm from "./CertificateForm";
 import SettingsForm from "./SettingsForm";
 
 export const metadata: Metadata = { title: "Configuración" };
@@ -31,16 +32,18 @@ export default async function SettingsPage() {
           {certificate.configured ? (
             <p className={certificate.expired ? "notice danger" : "notice success"} style={{ margin: "10px 0 0" }}>
               {certificate.expired ? "Firma CADUCADA" : "Firma cargada"}: <strong>{certificate.subject}</strong> · emitida por{" "}
-              {certificate.issuer} · válida hasta {formatDate(certificate.validTo)}
+              {certificate.issuer} · válida del {formatDate(dateInEcuador(certificate.validFrom))} al{" "}
+              {formatDate(dateInEcuador(certificate.validTo))}
+              {!certificate.expired && ` (${certificate.daysLeft === 1 ? "queda 1 día" : `quedan ${certificate.daysLeft} días`})`}
+              {" · "}
+              {certificate.source === "panel" ? "Subida en el panel" : "Variables de entorno"}
             </p>
           ) : (
-            <div className="notice warning" style={{ margin: "10px 0 0" }}>
+            <p className="notice warning" style={{ margin: "10px 0 0" }}>
               {certificate.error}
-              <br />
-              La firma se configura en variables de entorno del servidor (no se guarda en la base de datos):{" "}
-              <code>SRI_P12_PATH</code> o <code>SRI_P12_BASE64</code>, y <code>SRI_P12_PASSWORD</code>.
-            </div>
+            </p>
           )}
+          <CertificateForm hasUploaded={certificate.configured && certificate.source === "panel"} />
         </section>
         <SettingsForm
           settings={settings}
