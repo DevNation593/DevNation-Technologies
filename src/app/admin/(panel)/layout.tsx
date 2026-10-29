@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MobileNav, SidebarNav } from "@/components/admin/AdminNav";
+import CertificateBanner from "@/components/admin/CertificateBanner";
 import { requireAdmin } from "@/lib/admin/auth";
 import { signOut } from "../login/actions";
 
@@ -29,6 +30,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       </aside>
       <div className="adm-main">
         <MobileNav />
+        <CertificateBanner />
         {children}
       </div>
     </div>
