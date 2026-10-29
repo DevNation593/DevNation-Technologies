@@ -66,7 +66,8 @@ o guarda como PDF desde el navegador, y desde la factura se descargan el RIDE en
 Cada factura autorizada puede enviarse al comprador con el RIDE en PDF y el XML autorizado, por tu servidor SMTP.
 
 1. Define en `.env.local` y en el hosting (Vercel) las variables del servidor SMTP (solo servidor, nunca en
-   `NEXT_PUBLIC_*`): `SMTP_HOST`, `SMTP_PORT` (465 usa TLS directo; 587 usa STARTTLS), `SMTP_USER` y
+   `NEXT_PUBLIC_*`): `SMTP_HOST`, `SMTP_PORT` (465 usa TLS directo; en 587 STARTTLS es obligatorio y, si el servidor no lo
+   ofrece, no se envía nada), `SMTP_USER` y
    `SMTP_PASSWORD`.
 2. En **Configuración → Correo de facturación** comprueba que aparezca «Servidor SMTP: configurado» y escribe el
    remitente (p. ej. `DevNation Facturación <facturacion@devnation.tech>`). Debe ser una dirección que tu cuenta SMTP
@@ -91,7 +92,9 @@ Configuración única:
    ```bash
    node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
    ```
-2. Aplica las migraciones (`npx supabase db push`).
+2. Aplica las migraciones (`npx supabase db push`). Despliega el código **antes** de aplicar
+   `20261030090000_quita_avisos_correo_firma.sql`: la versión anterior de la app todavía escribe las columnas que esa
+   migración elimina, y la subida de la firma fallaría hasta el despliegue.
 3. Sube la firma en Configuración.
 
 Si antes configuraste los avisos por correo con Resend, borra sus secretos de Vault en el SQL Editor de Supabase

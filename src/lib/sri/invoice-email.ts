@@ -30,8 +30,13 @@ export interface OutgoingEmail {
 export interface SmtpConfig {
   host: string;
   port: number;
-  /** TLS directo en el puerto 465; en los demás (587, 25) se usa STARTTLS si el servidor lo ofrece. */
+  /** TLS directo en el puerto 465. */
   secure: boolean;
+  /**
+   * En los demás puertos (587, 25) STARTTLS es obligatorio: si el servidor no lo ofrece no se envía nada,
+   * para que la contraseña nunca viaje en claro. Solo se exime a un servidor en la propia máquina.
+   */
+  requireTls: boolean;
   user: string;
   password: string;
 }
@@ -104,7 +109,9 @@ export function readSmtpConfig(
   if (password && !user) missing.push("SMTP_USER");
   if (user && !password) missing.push("SMTP_PASSWORD");
   if (missing.length) return { missing };
-  return { config: { host, port, secure: port === 465, user, password } };
+  const secure = port === 465;
+  const loopback = ["localhost", "127.0.0.1", "::1"].includes(host.toLowerCase());
+  return { config: { host, port, secure, requireTls: !secure && !loopback, user, password } };
 }
 
 /** Mensaje apto para el usuario a partir de un error de nodemailer; nunca incluye credenciales. */
@@ -122,8 +129,12 @@ export function smtpErrorMessage(error: unknown): string {
     case "EDNS":
     case "ECONNREFUSED":
       return "No se pudo conectar con el servidor de correo.";
+    case "ETLS":
+      return "No se pudo establecer una conexión segura con el servidor de correo.";
     case "EENVELOPE":
-      return truncate(`El servidor SMTP rechazó el remitente o los destinatarios: ${serverText}`);
+      return serverText
+        ? truncate(`El servidor SMTP rechazó el remitente o los destinatarios: ${serverText}`)
+        : "El servidor SMTP rechazó el remitente o los destinatarios.";
   }
   return serverText ? truncate(`El servidor SMTP respondió: ${serverText}`) : "No se pudo enviar el correo.";
 }
@@ -177,6 +188,7 @@ export async function sendViaSmtp(email: OutgoingEmail, config: SmtpConfig): Pro
     host: config.host,
     port: config.port,
     secure: config.secure,
+    requireTLS: config.requireTls,
     auth: config.user ? { user: config.user, pass: config.password } : undefined,
     connectionTimeout: SMTP_CONNECTION_TIMEOUT_MS,
     greetingTimeout: SMTP_CONNECTION_TIMEOUT_MS,

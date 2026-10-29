@@ -59,7 +59,8 @@ Estos controles **no deben debilitarse** sin una justificación explícita en el
   `requireAdmin()`.
 - **Correo de facturas:** las credenciales SMTP (`SMTP_USER`, `SMTP_PASSWORD`) solo existen en las variables del
   servidor; el panel solo recibe el host y los nombres de las variables que faltan, y los errores de envío se
-  traducen a mensajes sin credenciales (`smtpErrorMessage`). Los destinatarios y el remitente se validan (máximo 3,
+  traducen a mensajes sin credenciales (`smtpErrorMessage`). Fuera de la propia máquina, la conexión SMTP exige TLS
+  (465) o STARTTLS obligatorio (`requireTLS`), así que la contraseña nunca viaja en claro. Los destinatarios y el remitente se validan (máximo 3,
   sin espacios, saltos de línea ni `<>`), así que no se pueden inyectar cabeceras; el HTML del correo escapa los datos
   del comprador y del emisor. El envío automático reserva la factura de forma atómica para no enviarla dos veces.
 - **Privacidad:** Google Analytics solo se carga cuando la persona acepta las cookies de medición.

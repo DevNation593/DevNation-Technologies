@@ -10,6 +10,7 @@ import {
   sendViaSmtp,
   type EmailOutcome,
 } from "./invoice-email";
+import { claimAutoSend, confirmAutoSend, releaseAutoSend } from "./invoice-email-claim";
 import { buildRideData } from "./ride";
 import { renderRidePdf } from "./ride-pdf";
 
@@ -73,37 +74,26 @@ export async function sendInvoiceEmail(supabase: SupabaseClient, invoiceId: stri
 
 /**
  * Envío automático al autorizar: devuelve null si no correspondía enviar. Nunca lanza.
- * Antes de enviar reserva la factura (marca last_emailed_at solo si estaba vacío) para que
- * dos peticiones simultáneas no manden el correo dos veces; si el envío falla, se libera.
+ * Reserva la factura antes de enviar (ver invoice-email-claim.ts) para que dos peticiones
+ * simultáneas no manden el correo dos veces; si el envío falla, libera la reserva.
  */
 export async function maybeSendOnAuthorization(supabase: SupabaseClient, invoiceId: string): Promise<EmailOutcome | null> {
-  let claimed = false;
+  let claimedAt: string | null = null;
   try {
     const invoice = await loadInvoice(supabase, invoiceId);
     const settings = await getCompanySettings(supabase);
     const to = autoSendRecipients(invoice, settings, "config" in readSmtpConfig());
     if (!to) return null;
 
-    const { data: claim, error: claimError } = await supabase
-      .from("invoices")
-      .update({ last_emailed_at: new Date().toISOString(), last_emailed_to: to.join(", "), last_email_error: null })
-      .eq("id", invoiceId)
-      .is("last_emailed_at", null)
-      .select("id");
-    if (claimError) throw new Error("No se pudo registrar el envío del correo.");
-    if (!claim?.length) return null; // Otra petición ya lo envió o lo está enviando.
-    claimed = true;
+    claimedAt = await claimAutoSend(supabase, invoiceId, to);
+    if (!claimedAt) return null; // Otra petición ya lo envió o lo está enviando.
 
     await deliverInvoiceEmail(invoice, settings, to);
+    await confirmAutoSend(supabase, invoiceId, claimedAt);
     return { sent: true, to };
   } catch (error) {
     const message = errorMessage(error);
-    if (claimed) {
-      await supabase
-        .from("invoices")
-        .update({ last_emailed_at: null, last_emailed_to: null, last_email_error: message })
-        .eq("id", invoiceId);
-    }
+    if (claimedAt) await releaseAutoSend(supabase, invoiceId, claimedAt, message);
     return { sent: false, error: message };
   }
 }
