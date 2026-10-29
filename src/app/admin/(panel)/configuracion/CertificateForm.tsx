@@ -11,7 +11,7 @@ export default function CertificateForm({ hasUploaded }: { hasUploaded: boolean 
   const formRef = useRef<HTMLFormElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [confirmRemove, setConfirmRemove] = useState(false);
-  const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
+  const [message, setMessage] = useState<{ text: string; error?: boolean; warning?: boolean } | null>(null);
   const [pending, startTransition] = useTransition();
 
   const upload = (event: React.FormEvent<HTMLFormElement>) => {
@@ -38,10 +38,14 @@ export default function CertificateForm({ hasUploaded }: { hasUploaded: boolean 
   const sendTest = () =>
     startTransition(async () => {
       const result = await sendCertificateTestEmail();
+      if (!result.ok) return setMessage({ text: result.error, error: true });
       setMessage(
-        result.ok
-          ? { text: "Correo de prueba enviado a los administradores. Revisa tu bandeja en unos minutos." }
-          : { text: result.error, error: true },
+        result.pending
+          ? {
+              text: "El correo de prueba sigue en cola: Resend aún no respondió. Vuelve a probar en un minuto.",
+              warning: true,
+            }
+          : { text: "Resend aceptó el correo de prueba para los administradores. Revisa tu bandeja en unos minutos." },
       );
     });
 
@@ -61,7 +65,11 @@ export default function CertificateForm({ hasUploaded }: { hasUploaded: boolean 
         <p className="hint" style={{ marginTop: 0 }}>
           La firma y su contraseña se guardan cifradas y nunca se vuelven a mostrar.
         </p>
-        {message && <p className={message.error ? "notice danger" : "notice success"}>{message.text}</p>}
+        {message && (
+          <p className={message.error ? "notice danger" : message.warning ? "notice warning" : "notice success"}>
+            {message.text}
+          </p>
+        )}
         <div className="adm-actions" style={{ justifyContent: "flex-start" }}>
           <button type="submit" className="btn-primary" disabled={pending}>
             {pending ? "Procesando…" : hasUploaded ? "Reemplazar firma" : "Subir firma"}

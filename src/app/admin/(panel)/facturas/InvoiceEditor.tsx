@@ -96,7 +96,7 @@ export default function InvoiceEditor({
   const [form, setForm] = useState<InvoiceInput>(() => initialState(invoice));
   const [message, setMessage] = useState<{ text: string; tone: "success" | "danger" | "warning" } | null>(null);
   const [dialog, setDialog] = useState<"emit" | "delete" | "void" | "email" | null>(null);
-  const [recipients, setRecipients] = useState(invoice?.buyer.email.trim() ?? "");
+  const [recipients, setRecipients] = useState("");
   const [pending, startTransition] = useTransition();
 
   const status = invoice?.status ?? "borrador";
@@ -260,7 +260,16 @@ export default function InvoiceEditor({
           </>
         )}
         {status === "autorizada" && (
-          <button className="btn-secondary" onClick={() => setDialog("email")} disabled={pending}>
+          <button
+            className="btn-secondary"
+            onClick={() => {
+              // El correo guardado puede haber cambiado desde que se abrió el editor (p. ej. al
+              // cambiar de comprador y emitir sin salir de la pantalla).
+              setRecipients(invoice?.buyer.email.trim() ?? "");
+              setDialog("email");
+            }}
+            disabled={pending}
+          >
             Reenviar por correo
           </button>
         )}
