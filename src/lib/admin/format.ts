@@ -5,6 +5,16 @@ export function todayInEcuador(): string {
   return new Date(Date.now() - ECUADOR_OFFSET_MS).toISOString().slice(0, 10);
 }
 
+/** Fecha en Ecuador (YYYY-MM-DD) de un instante ISO, p. ej. el vencimiento de un certificado. */
+export function dateInEcuador(iso: string): string {
+  return new Date(Date.parse(iso) - ECUADOR_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+/** Días de calendario en Ecuador desde hoy hasta la fecha de `iso` (negativo si ya pasó). */
+export function daysUntilInEcuador(iso: string): number {
+  return Math.round((Date.parse(dateInEcuador(iso)) - Date.parse(todayInEcuador())) / 86_400_000);
+}
+
 export function formatDate(iso: string | null | undefined): string {
   if (!iso) return "—";
   const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
