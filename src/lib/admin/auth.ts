@@ -21,11 +21,15 @@ export const requireAdmin = cache(async (): Promise<AdminSession> => {
 
   if (!claims?.sub) redirect("/admin/login");
 
-  const { data: admin } = await supabase
+  const { data: admin, error } = await supabase
     .from("admin_users")
     .select("full_name")
     .eq("user_id", claims.sub)
     .maybeSingle();
+
+  // Un fallo de la consulta no significa que el usuario no sea administrador:
+  // se muestra el error en lugar de cerrarle la sesión.
+  if (error) throw new Error("No se pudo verificar el acceso al panel.");
 
   if (!admin) {
     await supabase.auth.signOut();
