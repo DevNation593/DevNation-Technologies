@@ -67,7 +67,6 @@ export default async function DashboardPage() {
     .filter((i) => Number(i.ambiente) === settings.ambiente)
     .reduce((sum, i) => sum + toNumber(i.total), 0);
   const quoted = (openQuotes.data ?? []).reduce((sum, q) => sum + toNumber(q.total), 0);
-  const certExpiresSoon = certificate.configured && certificate.expiresSoon;
 
   return (
     <>
@@ -83,11 +82,6 @@ export default async function DashboardPage() {
           <p className="notice warning">
             Falta configurar la firma electrónica (.p12) para emitir facturas.{" "}
             <Link href="/admin/configuracion">Ver configuración</Link>
-          </p>
-        )}
-        {certExpiresSoon && (
-          <p className="notice danger">
-            La firma electrónica vence el {formatDate(certificate.configured ? certificate.validTo : "")}. Renuévala a tiempo.
           </p>
         )}
 
