@@ -1,4 +1,5 @@
 import "server-only";
+import nodemailer from "nodemailer";
 import { formatMoney } from "@/lib/admin/format";
 import type { CompanySettings, Invoice } from "@/lib/admin/types";
 import type { RideData } from "./ride";
@@ -6,24 +7,33 @@ import type { RideData } from "./ride";
 /** Sin espacios ni caracteres que permitan inyectar cabeceras o nombres ("<", ",", ";"…). */
 const EMAIL_PATTERN = /^[^\s@<>(),;:"]+@[^\s@<>(),;:"]+\.[^\s@<>(),;:"]+$/;
 const MAX_EMAIL_LENGTH = 254;
-const RESEND_URL = "https://api.resend.com/emails";
-const RESEND_TIMEOUT_MS = 15_000;
 const MAX_ERROR_LENGTH = 300;
+const SMTP_CONNECTION_TIMEOUT_MS = 10_000;
+const SMTP_SOCKET_TIMEOUT_MS = 20_000;
 
 export interface EmailAttachment {
   filename: string;
-  /** Contenido en base64. */
-  content: string;
+  content: Buffer;
+  contentType: string;
 }
 
-export interface ResendPayload {
+export interface OutgoingEmail {
   from: string;
   to: string[];
   bcc?: string[];
-  reply_to?: string[];
+  replyTo?: string[];
   subject: string;
   html: string;
   attachments: EmailAttachment[];
+}
+
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  /** TLS directo en el puerto 465; en los demás (587, 25) se usa STARTTLS si el servidor lo ofrece. */
+  secure: boolean;
+  user: string;
+  password: string;
 }
 
 export type EmailOutcome = { sent: true; to: string[] } | { sent: false; error: string };
@@ -59,7 +69,7 @@ const SENDER_PATTERN = /^(?:([^<>",;\r\n]+?)\s*<([^<>]+)>|([^<>]+))$/;
 
 /**
  * Valida el remitente del correo de facturación y lo devuelve normalizado ("" si está vacío).
- * La dirección debe ser exactamente un correo válido, para que Resend no lo rechace al enviar.
+ * La dirección debe ser exactamente un correo válido para que el servidor SMTP la acepte.
  */
 export function parseSender(value: string): string {
   const sender = value.trim();
@@ -76,9 +86,51 @@ export function parseSender(value: string): string {
   return sender;
 }
 
+/**
+ * Lee la configuración SMTP de las variables del servidor. Usuario y contraseña son
+ * opcionales (servidores locales sin autenticación), pero deben venir juntos.
+ */
+export function readSmtpConfig(
+  env: Record<string, string | undefined> = process.env,
+): { config: SmtpConfig } | { missing: string[] } {
+  const host = env.SMTP_HOST?.trim() ?? "";
+  const port = Number(env.SMTP_PORT?.trim());
+  const user = env.SMTP_USER?.trim() ?? "";
+  const password = env.SMTP_PASSWORD ?? "";
+
+  const missing: string[] = [];
+  if (!host) missing.push("SMTP_HOST");
+  if (!Number.isInteger(port) || port < 1 || port > 65535) missing.push("SMTP_PORT");
+  if (password && !user) missing.push("SMTP_USER");
+  if (user && !password) missing.push("SMTP_PASSWORD");
+  if (missing.length) return { missing };
+  return { config: { host, port, secure: port === 465, user, password } };
+}
+
+/** Mensaje apto para el usuario a partir de un error de nodemailer; nunca incluye credenciales. */
+export function smtpErrorMessage(error: unknown): string {
+  const { code, response } = (error ?? {}) as { code?: unknown; response?: unknown };
+  const serverText = typeof response === "string" ? response.trim() : "";
+  const truncate = (text: string) => text.slice(0, MAX_ERROR_LENGTH);
+
+  switch (code) {
+    case "EAUTH":
+      return "El servidor SMTP rechazó el usuario o la contraseña.";
+    case "ECONNECTION":
+    case "ESOCKET":
+    case "ETIMEDOUT":
+    case "EDNS":
+    case "ECONNREFUSED":
+      return "No se pudo conectar con el servidor de correo.";
+    case "EENVELOPE":
+      return truncate(`El servidor SMTP rechazó el remitente o los destinatarios: ${serverText}`);
+  }
+  return serverText ? truncate(`El servidor SMTP respondió: ${serverText}`) : "No se pudo enviar el correo.";
+}
+
 /** Destinatarios del envío automático al autorizar, o null si no corresponde enviar. Nunca lanza. */
-export function autoSendRecipients(invoice: Invoice, settings: CompanySettings, hasApiKey: boolean): string[] | null {
-  if (!settings.invoice_email_enabled || !hasApiKey || !settings.invoice_email_from.trim()) return null;
+export function autoSendRecipients(invoice: Invoice, settings: CompanySettings, smtpReady: boolean): string[] | null {
+  if (!settings.invoice_email_enabled || !smtpReady || !settings.invoice_email_from.trim()) return null;
   if (invoice.status !== "autorizada" || !invoice.authorized_xml || invoice.last_emailed_at) return null;
   try {
     return parseRecipients(invoice.buyer.email ?? "");
@@ -113,43 +165,37 @@ export function buildInvoiceEmail(input: {
     subject: `Factura ${data.number} de ${issuer}`,
     html,
     attachments: [
-      { filename: `${data.fileBase}.pdf`, content: pdf.toString("base64") },
-      { filename: `${data.fileBase}.xml`, content: Buffer.from(authorizedXml, "utf8").toString("base64") },
+      { filename: `${data.fileBase}.pdf`, content: pdf, contentType: "application/pdf" },
+      { filename: `${data.fileBase}.xml`, content: Buffer.from(authorizedXml, "utf8"), contentType: "application/xml" },
     ],
   };
 }
 
-/** Envía el correo con la API HTTP de Resend. Los errores nunca incluyen la API key. */
-export async function postToResend(
-  payload: ResendPayload,
-  options: { apiKey: string; idempotencyKey?: string },
-): Promise<{ id: string }> {
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${options.apiKey}`,
-    "Content-Type": "application/json",
-  };
-  if (options.idempotencyKey) headers["Idempotency-Key"] = options.idempotencyKey;
-
-  let response: Response;
+/** Envía el correo por el servidor SMTP configurado. Lanza errores con un mensaje legible. */
+export async function sendViaSmtp(email: OutgoingEmail, config: SmtpConfig): Promise<{ messageId: string }> {
+  const transport = nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    auth: config.user ? { user: config.user, pass: config.password } : undefined,
+    connectionTimeout: SMTP_CONNECTION_TIMEOUT_MS,
+    greetingTimeout: SMTP_CONNECTION_TIMEOUT_MS,
+    socketTimeout: SMTP_SOCKET_TIMEOUT_MS,
+  });
   try {
-    response = await fetch(RESEND_URL, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
+    const info = await transport.sendMail({
+      from: email.from,
+      to: email.to,
+      bcc: email.bcc,
+      replyTo: email.replyTo,
+      subject: email.subject,
+      html: email.html,
+      attachments: email.attachments,
     });
-  } catch {
-    throw new Error("No se pudo conectar con el servicio de correo.");
+    return { messageId: String(info.messageId ?? "") };
+  } catch (error) {
+    throw new Error(smtpErrorMessage(error));
+  } finally {
+    transport.close();
   }
-
-  const body: unknown = await response.json().catch(() => null);
-  if (!response.ok) {
-    const message = (body as { message?: unknown } | null)?.message;
-    throw new Error(
-      typeof message === "string" && message.trim()
-        ? message.trim().slice(0, MAX_ERROR_LENGTH)
-        : `El servicio de correo respondió con un error (${response.status}).`,
-    );
-  }
-  return { id: String((body as { id?: unknown } | null)?.id ?? "") };
 }

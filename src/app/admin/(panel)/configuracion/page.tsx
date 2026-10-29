@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/admin/auth";
 import { dateInEcuador, formatDate } from "@/lib/admin/format";
 import { getCompanySettings } from "@/lib/admin/server";
 import { getCertificateStatus } from "@/lib/sri/certificate";
+import { readSmtpConfig } from "@/lib/sri/invoice-email";
 import { createClient } from "@/lib/supabase/server";
 import CertificateForm from "./CertificateForm";
 import InvoiceEmailForm from "./InvoiceEmailForm";
@@ -23,6 +24,9 @@ export default async function SettingsPage() {
       .eq("key", `factura:${settings.ambiente}:${settings.estab}-${settings.pto_emi}`)
       .maybeSingle(),
   ]);
+  // Solo el host y los nombres de variables que faltan llegan al navegador, nunca las credenciales.
+  const smtp = readSmtpConfig();
+  const smtpStatus = "config" in smtp ? { host: smtp.config.host, missing: [] } : { host: "", missing: smtp.missing };
 
   return (
     <>
@@ -46,7 +50,7 @@ export default async function SettingsPage() {
           )}
           <CertificateForm hasUploaded={certificate.configured && certificate.source === "panel"} />
         </section>
-        <InvoiceEmailForm settings={settings} hasApiKey={Boolean(process.env.RESEND_API_KEY?.trim())} />
+        <InvoiceEmailForm settings={settings} smtp={smtpStatus} />
         <SettingsForm
           settings={settings}
           nextSequential={Number(sequence.data?.last_value ?? 0) + 1}

@@ -98,8 +98,7 @@ function RideDocument({ data, logoDataUrl }: { data: RideData; logoDataUrl: stri
   const logo = /^data:image\/(png|jpeg);base64,/.test(logoDataUrl) ? logoDataUrl : "";
 
   return (
-    // Fecha fija: el mismo correo automático debe tener el mismo contenido para que la
-    // clave de idempotencia de Resend lo reconozca como duplicado.
+    // Fecha fija: la misma factura genera siempre el mismo PDF, byte a byte.
     <Document
       title={data.fileBase}
       author={data.issuer.razonSocial}

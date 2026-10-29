@@ -7,10 +7,11 @@ import { saveInvoiceEmailSettings } from "./actions";
 
 export default function InvoiceEmailForm({
   settings,
-  hasApiKey,
+  smtp,
 }: {
   settings: CompanySettings;
-  hasApiKey: boolean;
+  /** Host del servidor SMTP configurado, o las variables que faltan. */
+  smtp: { host: string; missing: string[] };
 }) {
   const router = useRouter();
   const [form, setForm] = useState({
@@ -46,10 +47,13 @@ export default function InvoiceEmailForm({
     <section className="adm-card adm-card-pad" style={{ marginBottom: 16 }}>
       <h2>Correo de facturación</h2>
       <p className="hint" style={{ marginTop: 0 }}>
-        Cada factura autorizada se envía al comprador con el RIDE en PDF y el XML autorizado.
+        Cada factura autorizada se envía al comprador con el RIDE en PDF y el XML autorizado, por tu servidor SMTP. El
+        remitente debe ser una dirección que tu cuenta SMTP pueda usar (normalmente la misma de SMTP_USER).
       </p>
-      <p className={hasApiKey ? "notice success" : "notice warning"}>
-        {hasApiKey ? "API key de Resend: configurada" : "Falta RESEND_API_KEY en las variables del servidor."}
+      <p className={smtp.missing.length ? "notice warning" : "notice success"}>
+        {smtp.missing.length
+          ? `Faltan variables del servidor SMTP: ${smtp.missing.join(", ")}.`
+          : `Servidor SMTP: configurado (${smtp.host}).`}
       </p>
       {!logoSupported && (
         <p className="notice warning">El logo no es PNG ni JPG: el PDF de las facturas saldrá sin logo.</p>
