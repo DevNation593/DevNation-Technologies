@@ -1,0 +1,6 @@
+# Redirigir únicamente el subdominio administrativo
+[[redirects]]
+  from = "https://admin.devnation.tech/"
+  to = "https://admin.devnation.tech/admin"
+  status = 302
+  force = true
