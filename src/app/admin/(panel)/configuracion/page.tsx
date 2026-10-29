@@ -6,6 +6,7 @@ import { getCompanySettings } from "@/lib/admin/server";
 import { getCertificateStatus } from "@/lib/sri/certificate";
 import { createClient } from "@/lib/supabase/server";
 import CertificateForm from "./CertificateForm";
+import InvoiceEmailForm from "./InvoiceEmailForm";
 import SettingsForm from "./SettingsForm";
 
 export const metadata: Metadata = { title: "Configuración" };
@@ -45,6 +46,7 @@ export default async function SettingsPage() {
           )}
           <CertificateForm hasUploaded={certificate.configured && certificate.source === "panel"} />
         </section>
+        <InvoiceEmailForm settings={settings} hasApiKey={Boolean(process.env.RESEND_API_KEY?.trim())} />
         <SettingsForm
           settings={settings}
           nextSequential={Number(sequence.data?.last_value ?? 0) + 1}

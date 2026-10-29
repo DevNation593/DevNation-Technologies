@@ -19,6 +19,10 @@ export interface CompanySettings {
   telefono: string;
   ciudad: string;
   logo_data_url: string;
+  invoice_email_enabled: boolean;
+  invoice_email_from: string;
+  invoice_email_reply_to: string;
+  invoice_email_bcc: string;
   updated_at?: string;
 }
 
@@ -182,6 +186,9 @@ export interface Invoice {
   authorization_number: string | null;
   authorized_at: string | null;
   sri_messages: SriMessage[];
+  last_emailed_at: string | null;
+  last_emailed_to: string | null;
+  last_email_error: string | null;
   created_at: string;
   updated_at: string;
 }

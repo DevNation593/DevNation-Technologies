@@ -51,7 +51,7 @@ npm run admin:remove-user -- --email ana@devnation.tech
 ### Facturación electrónica
 
 1. En **Configuración** completa RUC, razón social, dirección matriz, régimen, establecimiento y punto de emisión.
-2. Sube la firma electrónica `.p12` en **Configuración → Firma electrónica** (ver la sección siguiente).
+2. Sube la firma electrónica `.p12` en **Configuración → Firma electrónica** (ver «Firma electrónica y avisos de caducidad»).
 3. Emite primero en ambiente de **pruebas**. Cuando el SRI habilite tu RUC en producción, cambia el ambiente en
    Configuración; si ya emitiste facturas en otro sistema, ajusta el próximo secuencial.
 
@@ -59,7 +59,24 @@ Flujo de emisión: se asigna el secuencial y la clave de acceso, se genera el XM
 XAdES-BES y se envía a recepción; luego se consulta la autorización. Si el SRI **devuelve** el comprobante se corrige y
 se reenvía con la misma clave; si queda **no autorizado** se reemite con un número nuevo. Una factura autorizada no se
 puede editar ni borrar: solo marcarse como anulada (la anulación se solicita en el portal del SRI). El RIDE se imprime
-o guarda como PDF desde el navegador y el XML autorizado se descarga desde la factura.
+o guarda como PDF desde el navegador, y desde la factura se descargan el RIDE en PDF y el XML autorizado.
+
+### Envío de facturas por correo
+
+Cada factura autorizada puede enviarse al comprador con el RIDE en PDF y el XML autorizado, usando
+[Resend](https://resend.com).
+
+1. Crea una cuenta en Resend y verifica el dominio `devnation.tech` (registros DNS).
+2. Define `RESEND_API_KEY` en `.env.local` y en el hosting (Vercel). Es solo del servidor: nunca en `NEXT_PUBLIC_*`.
+   Puede ser la misma API key que guardaste en Vault para los avisos de la firma.
+3. En **Configuración → Correo de facturación** escribe el remitente (p. ej.
+   `DevNation Facturación <facturacion@devnation.tech>`), y opcionalmente «Responder a» y una copia oculta.
+4. Activa «Enviar automáticamente cada factura autorizada al comprador»: al quedar autorizada, se envía al correo del
+   comprador (hasta 3 direcciones separadas por coma) una sola vez.
+5. Desde una factura autorizada, **Reenviar por correo** permite enviarla de nuevo o a otros destinatarios. El
+   resultado del último envío (o el error) queda visible en la factura.
+
+Un fallo del correo nunca cambia el estado de la factura en el SRI.
 
 ### Firma electrónica y avisos de caducidad
 

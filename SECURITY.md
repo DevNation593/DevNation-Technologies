@@ -60,7 +60,11 @@ Estos controles **no deben debilitarse** sin una justificación explícita en el
   datos del certificado con `private.escape_html`.
 - **Integridad de facturas:** el trigger `private.protect_authorized_invoice` impide modificar o borrar comprobantes
   autorizados o con clave de acceso, y la numeración se reserva de forma atómica con `next_document_number`.
-- **Descargas:** el XML de facturas se sirve con `Cache-Control: private, no-store` tras `requireAdmin()`.
+- **Descargas:** el XML y el RIDE en PDF de las facturas se sirven con `Cache-Control: private, no-store` tras
+  `requireAdmin()`.
+- **Correo de facturas:** `RESEND_API_KEY` solo existe en las variables del servidor y nunca aparece en mensajes de
+  error. Los destinatarios se validan (máximo 3, sin espacios, saltos de línea ni `<>`), así que no se pueden inyectar
+  cabeceras; el HTML del correo escapa los datos del comprador y del emisor.
 - **Privacidad:** Google Analytics solo se carga cuando la persona acepta las cookies de medición.
 
 ## Lista de verificación para revisiones
@@ -97,6 +101,8 @@ Los revisores (humanos o automáticos, ver [`AGENTS.md`](./AGENTS.md)) deben com
 - [ ] No se reutilizan secuenciales ni claves de acceso; la numeración usa `next_document_number`.
 - [ ] El ambiente de producción solo se usa cuando el usuario lo configura.
 - [ ] El certificado y su contraseña nunca se registran ni se devuelven al cliente.
+- [ ] El envío por correo valida los destinatarios con `parseRecipients` y no altera ninguna columna fiscal de la
+      factura (solo `last_email*`).
 
 ### Dependencias y terceros
 - [ ] Dependencias nuevas justificadas, con versión fijada en las críticas (`@supabase/*`, `node-forge`,

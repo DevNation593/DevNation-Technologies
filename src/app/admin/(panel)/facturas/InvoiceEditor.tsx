@@ -27,9 +27,19 @@ import {
   deleteInvoice,
   emitInvoice,
   markInvoiceVoided,
+  resendInvoiceEmail,
   saveInvoice,
+  type AuthorizationResult,
   type InvoiceInput,
 } from "./actions";
+
+/** Texto que se añade al resultado de emitir o consultar según el envío automático por correo. */
+function emailNote(result: AuthorizationResult): string {
+  if (!result.email) return "";
+  return result.email.sent
+    ? ` Enviada por correo a ${result.email.to.join(", ")}.`
+    : ` No se pudo enviar el correo: ${result.email.error.replace(/\.$/, "")}.`;
+}
 
 const EDITABLE = ["borrador", "devuelta", "no_autorizada"];
 
@@ -85,7 +95,8 @@ export default function InvoiceEditor({
   const router = useRouter();
   const [form, setForm] = useState<InvoiceInput>(() => initialState(invoice));
   const [message, setMessage] = useState<{ text: string; tone: "success" | "danger" | "warning" } | null>(null);
-  const [dialog, setDialog] = useState<"emit" | "delete" | "void" | null>(null);
+  const [dialog, setDialog] = useState<"emit" | "delete" | "void" | "email" | null>(null);
+  const [recipients, setRecipients] = useState(invoice?.buyer.email.trim() ?? "");
   const [pending, startTransition] = useTransition();
 
   const status = invoice?.status ?? "borrador";
@@ -169,7 +180,11 @@ export default function InvoiceEditor({
       if (!id) return;
       const result = await emitInvoice(id);
       if (!result.ok) setMessage({ text: result.error, tone: "danger" });
-      else if (result.status === "autorizada") setMessage({ text: "Factura AUTORIZADA por el SRI.", tone: "success" });
+      else if (result.status === "autorizada")
+        setMessage({
+          text: `Factura AUTORIZADA por el SRI.${emailNote(result)}`,
+          tone: result.email && !result.email.sent ? "warning" : "success",
+        });
       else if (result.status === "enviada")
         setMessage({ text: "El SRI recibió la factura y la está procesando. Consulta la autorización en unos minutos.", tone: "warning" });
       else setMessage({ text: "El SRI rechazó la factura. Revisa los mensajes, corrige y vuelve a emitir.", tone: "danger" });
@@ -182,7 +197,24 @@ export default function InvoiceEditor({
       if (!invoice) return;
       const result = await checkAuthorization(invoice.id);
       if (!result.ok) setMessage({ text: result.error, tone: "danger" });
-      else setMessage({ text: `Estado en el SRI: ${result.status.replace("_", " ")}.`, tone: "success" });
+      else
+        setMessage({
+          text: `Estado en el SRI: ${result.status.replace("_", " ")}.${emailNote(result)}`,
+          tone: result.email && !result.email.sent ? "warning" : "success",
+        });
+      router.refresh();
+    });
+
+  const sendEmail = () =>
+    startTransition(async () => {
+      if (!invoice) return;
+      setDialog(null);
+      const result = await resendInvoiceEmail(invoice.id, recipients);
+      setMessage(
+        result.ok
+          ? { text: `Factura enviada a ${result.to.join(", ")}.`, tone: "success" }
+          : { text: result.error, tone: "danger" },
+      );
       router.refresh();
     });
 
@@ -215,12 +247,22 @@ export default function InvoiceEditor({
             <Link className="btn btn-secondary" href={`/admin/facturas/${invoice.id}/ride`}>
               RIDE / PDF
             </Link>
+            {(status === "autorizada" || status === "anulada") && (
+              <a className="btn btn-secondary" href={`/admin/facturas/${invoice.id}/pdf`} target="_blank" rel="noreferrer">
+                Descargar PDF
+              </a>
+            )}
             {(invoice.authorized_xml || invoice.signed_xml) && (
               <a className="btn btn-secondary" href={`/admin/facturas/${invoice.id}/xml`}>
                 Descargar XML
               </a>
             )}
           </>
+        )}
+        {status === "autorizada" && (
+          <button className="btn-secondary" onClick={() => setDialog("email")} disabled={pending}>
+            Reenviar por correo
+          </button>
         )}
         {status === "enviada" && (
           <button className="btn-secondary" onClick={refresh} disabled={pending}>
@@ -265,7 +307,16 @@ export default function InvoiceEditor({
                   Autorizada: {formatDateTime(invoice.authorized_at)}
                 </>
               )}
+              {invoice?.last_emailed_at && (
+                <>
+                  <br />
+                  Enviada por correo a {invoice.last_emailed_to} el {formatDateTime(invoice.last_emailed_at)}
+                </>
+              )}
             </p>
+            {invoice?.last_email_error && (
+              <p className="notice danger">No se pudo enviar el correo: {invoice.last_email_error}</p>
+            )}
 
             {environment === 1 && (
               <p className="notice warning">
@@ -718,6 +769,19 @@ export default function InvoiceEditor({
           setDialog(null);
           remove();
         }}
+      />
+      <ConfirmDialog
+        open={dialog === "email"}
+        title="Enviar factura por correo"
+        message={
+          <label className="field" style={{ margin: 0 }}>
+            Destinatarios (máximo 3, separados por coma)
+            <input value={recipients} onChange={(e) => setRecipients(e.target.value)} maxLength={800} />
+          </label>
+        }
+        confirmLabel="Enviar"
+        onCancel={() => setDialog(null)}
+        onConfirm={sendEmail}
       />
     </>
   );

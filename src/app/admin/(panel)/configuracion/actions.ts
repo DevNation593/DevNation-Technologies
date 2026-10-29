@@ -7,11 +7,50 @@ import { actionError, text, type ActionResult } from "@/lib/admin/server";
 import type { CompanySettings } from "@/lib/admin/types";
 import { regimes } from "@/lib/sri/catalogs";
 import { encryptSecret } from "@/lib/sri/crypto";
+import { parseRecipients, parseSender } from "@/lib/sri/invoice-email";
 import { parseP12 } from "@/lib/sri/p12";
 
 const MAX_LOGO_LENGTH = 400_000;
 const MAX_P12_BYTES = 50 * 1024;
 const MAX_P12_PASSWORD_LENGTH = 200;
+const MAX_EMAIL_SETTING_LENGTH = 200;
+
+/** Valida un correo opcional (responder a, copia oculta); devuelve "" si está vacío. */
+function optionalEmail(value: string): string {
+  const email = text(value, MAX_EMAIL_SETTING_LENGTH);
+  return email ? parseRecipients(email, 1)[0] : "";
+}
+
+export async function saveInvoiceEmailSettings(input: {
+  enabled: boolean;
+  from: string;
+  replyTo: string;
+  bcc: string;
+}): Promise<ActionResult<object>> {
+  try {
+    const supabase = await adminClient();
+    const enabled = input.enabled === true;
+    const from = parseSender(typeof input.from === "string" ? input.from : "");
+    if (enabled && !from) {
+      throw new Error("Escribe el remitente, p. ej. DevNation Facturación <facturacion@devnation.tech>.");
+    }
+
+    const { error } = await supabase
+      .from("company_settings")
+      .update({
+        invoice_email_enabled: enabled,
+        invoice_email_from: from,
+        invoice_email_reply_to: optionalEmail(input.replyTo),
+        invoice_email_bcc: optionalEmail(input.bcc),
+      })
+      .eq("id", 1);
+    if (error) throw error;
+    revalidatePath("/admin", "layout");
+    return { ok: true };
+  } catch (error) {
+    return actionError(error);
+  }
+}
 
 export async function saveSettings(input: CompanySettings): Promise<ActionResult<object>> {
   try {

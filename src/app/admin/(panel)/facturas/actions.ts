@@ -7,6 +7,8 @@ import { actionError, number, text, upsertClient, type ActionResult } from "@/li
 import type { Invoice, InvoiceStatus } from "@/lib/admin/types";
 import { identificationTypes, paymentMethods, vatRates } from "@/lib/sri/catalogs";
 import { emitInvoice as emit, refreshAuthorization, type EmissionOutcome } from "@/lib/sri/emit";
+import { parseRecipients, type EmailOutcome } from "@/lib/sri/invoice-email";
+import { maybeSendOnAuthorization, sendInvoiceEmail } from "@/lib/sri/invoice-email-send";
 import { computeInvoiceTotals } from "@/lib/sri/totals";
 
 const EDITABLE: InvoiceStatus[] = ["borrador", "devuelta", "no_autorizada"];
@@ -91,25 +93,45 @@ export async function saveInvoice(id: string | null, input: InvoiceInput): Promi
   }
 }
 
-export async function emitInvoice(id: string): Promise<ActionResult<EmissionOutcome>> {
+/** Resultado de emitir o consultar, con el envío automático por correo si la factura quedó autorizada. */
+export type AuthorizationResult = EmissionOutcome & { email?: EmailOutcome };
+
+export async function emitInvoice(id: string): Promise<ActionResult<AuthorizationResult>> {
   try {
     const supabase = await adminClient();
     const outcome = await emit(supabase, id);
+    // Un fallo de correo nunca cambia el resultado de la emisión.
+    const email = outcome.status === "autorizada" ? await maybeSendOnAuthorization(supabase, id) : null;
     revalidatePath("/admin/facturas");
-    return { ok: true, ...outcome };
+    return { ok: true, ...outcome, ...(email ? { email } : {}) };
   } catch (error) {
     revalidatePath("/admin/facturas");
     return actionError(error);
   }
 }
 
-export async function checkAuthorization(id: string): Promise<ActionResult<EmissionOutcome>> {
+export async function checkAuthorization(id: string): Promise<ActionResult<AuthorizationResult>> {
   try {
     const supabase = await adminClient();
     const outcome = await refreshAuthorization(supabase, id);
+    const email = outcome.status === "autorizada" ? await maybeSendOnAuthorization(supabase, id) : null;
     revalidatePath("/admin/facturas");
-    return { ok: true, ...outcome };
+    return { ok: true, ...outcome, ...(email ? { email } : {}) };
   } catch (error) {
+    return actionError(error);
+  }
+}
+
+/** Reenvía la factura autorizada a hasta 3 destinatarios. */
+export async function resendInvoiceEmail(id: string, recipients: string): Promise<ActionResult<{ to: string[] }>> {
+  try {
+    const supabase = await adminClient();
+    const to = parseRecipients(typeof recipients === "string" ? recipients : "");
+    const result = await sendInvoiceEmail(supabase, id, { to, trigger: "manual" });
+    revalidatePath(`/admin/facturas/${id}`);
+    return { ok: true, ...result };
+  } catch (error) {
+    revalidatePath(`/admin/facturas/${id}`);
     return actionError(error);
   }
 }
