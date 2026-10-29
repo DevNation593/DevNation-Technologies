@@ -36,9 +36,18 @@ import {
 /** Texto que se añade al resultado de emitir o consultar según el envío automático por correo. */
 function emailNote(result: AuthorizationResult): string {
   if (!result.email) return "";
-  return result.email.sent
-    ? ` Enviada por correo a ${result.email.to.join(", ")}.`
-    : ` No se pudo enviar el correo: ${result.email.error.replace(/\.$/, "")}.`;
+  if (!result.email.sent) return ` No se pudo enviar el correo: ${result.email.error.replace(/\.$/, "")}.`;
+  return ` Enviada por correo a ${result.email.to.join(", ")}.${rejectedNote(result.email.rejected)}`;
+}
+
+/** Aviso de los destinatarios que el servidor SMTP rechazó y requieren reenvío. */
+function rejectedNote(rejected: string[]): string {
+  return rejected.length ? ` No se pudo entregar a ${rejected.join(", ")}: reenvíala a esas direcciones.` : "";
+}
+
+/** El aviso del resultado es de advertencia si el correo falló o algún destinatario fue rechazado. */
+function emailWarning(result: AuthorizationResult): boolean {
+  return Boolean(result.email && (!result.email.sent || result.email.rejected.length > 0));
 }
 
 const EDITABLE = ["borrador", "devuelta", "no_autorizada"];
@@ -183,7 +192,7 @@ export default function InvoiceEditor({
       else if (result.status === "autorizada")
         setMessage({
           text: `Factura AUTORIZADA por el SRI.${emailNote(result)}`,
-          tone: result.email && !result.email.sent ? "warning" : "success",
+          tone: emailWarning(result) ? "warning" : "success",
         });
       else if (result.status === "enviada")
         setMessage({ text: "El SRI recibió la factura y la está procesando. Consulta la autorización en unos minutos.", tone: "warning" });
@@ -200,7 +209,7 @@ export default function InvoiceEditor({
       else
         setMessage({
           text: `Estado en el SRI: ${result.status.replace("_", " ")}.${emailNote(result)}`,
-          tone: result.email && !result.email.sent ? "warning" : "success",
+          tone: emailWarning(result) ? "warning" : "success",
         });
       router.refresh();
     });
@@ -212,7 +221,10 @@ export default function InvoiceEditor({
       const result = await resendInvoiceEmail(invoice.id, recipients);
       setMessage(
         result.ok
-          ? { text: `Factura enviada a ${result.to.join(", ")}.`, tone: "success" }
+          ? {
+              text: `Factura enviada a ${result.to.join(", ")}.${rejectedNote(result.rejected)}`,
+              tone: result.rejected.length ? "warning" : "success",
+            }
           : { text: result.error, tone: "danger" },
       );
       router.refresh();

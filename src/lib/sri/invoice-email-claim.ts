@@ -1,5 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { rejectedRecipientsMessage } from "./invoice-email";
 
 /**
  * Aviso que queda en la factura mientras el envío automático está en curso. Si el proceso
@@ -26,13 +27,23 @@ export async function claimAutoSend(supabase: SupabaseClient, invoiceId: string,
 }
 
 /**
- * Confirma el envío de la reserva `claimedAt`. Solo actúa si la factura sigue con esa marca,
- * para no tocar el registro de un reenvío manual que terminó mientras tanto.
+ * Confirma el envío de la reserva `claimedAt` con los destinatarios que aceptó el servidor;
+ * si rechazó alguno, lo deja anotado para reenviar. Solo actúa si la factura sigue con esa
+ * marca, para no tocar el registro de un reenvío manual que terminó mientras tanto.
  */
-export async function confirmAutoSend(supabase: SupabaseClient, invoiceId: string, claimedAt: string): Promise<void> {
+export async function confirmAutoSend(
+  supabase: SupabaseClient,
+  invoiceId: string,
+  claimedAt: string,
+  accepted: string[],
+  rejected: string[],
+): Promise<void> {
   await supabase
     .from("invoices")
-    .update({ last_email_error: null })
+    .update({
+      last_emailed_to: accepted.join(", "),
+      last_email_error: rejected.length ? rejectedRecipientsMessage(rejected) : null,
+    })
     .eq("id", invoiceId)
     .eq("last_emailed_at", claimedAt);
 }

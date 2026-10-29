@@ -7,7 +7,9 @@ import {
   buildInvoiceEmail,
   parseRecipients,
   readSmtpConfig,
+  rejectedRecipientsMessage,
   sendViaSmtp,
+  type DeliveryResult,
   type EmailOutcome,
 } from "./invoice-email";
 import { claimAutoSend, confirmAutoSend, releaseAutoSend } from "./invoice-email-claim";
@@ -24,8 +26,11 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "No se pudo enviar el correo.";
 }
 
-/** Genera el RIDE en PDF y envía la factura autorizada por SMTP. No escribe en la base. */
-async function deliverInvoiceEmail(invoice: Invoice, settings: CompanySettings, to: string[]): Promise<void> {
+/**
+ * Genera el RIDE en PDF y envía la factura autorizada por SMTP. No escribe en la base.
+ * Devuelve qué destinatarios aceptó el servidor; lanza si no aceptó ninguno.
+ */
+async function deliverInvoiceEmail(invoice: Invoice, settings: CompanySettings, to: string[]): Promise<DeliveryResult> {
   const smtp = readSmtpConfig();
   if ("missing" in smtp || !settings.invoice_email_from.trim()) {
     throw new Error("Configura el correo de facturación (servidor SMTP y remitente) en Configuración.");
@@ -35,7 +40,7 @@ async function deliverInvoiceEmail(invoice: Invoice, settings: CompanySettings, 
   const data = buildRideData(invoice, settings);
   const pdf = await renderRidePdf(data, settings.logo_data_url);
   const email = buildInvoiceEmail({ data, settings, pdf, authorizedXml: invoice.authorized_xml ?? "" });
-  await sendViaSmtp(
+  return sendViaSmtp(
     {
       from: settings.invoice_email_from.trim(),
       to,
@@ -48,17 +53,23 @@ async function deliverInvoiceEmail(invoice: Invoice, settings: CompanySettings, 
 }
 
 /**
- * Reenvío manual de una factura autorizada. Deja registrado el resultado en la
- * factura y lanza el error con un mensaje apto para mostrar al usuario.
+ * Reenvío manual de una factura autorizada. Registra solo los destinatarios aceptados y, si
+ * el servidor rechazó alguno, lo deja anotado en la factura para reenviar. Lanza el error con
+ * un mensaje apto para mostrar al usuario si no se aceptó ninguno.
  */
-export async function sendInvoiceEmail(supabase: SupabaseClient, invoiceId: string, to: string[]): Promise<{ to: string[] }> {
+export async function sendInvoiceEmail(
+  supabase: SupabaseClient,
+  invoiceId: string,
+  to: string[],
+): Promise<{ to: string[]; rejected: string[] }> {
   const invoice = await loadInvoice(supabase, invoiceId);
   if (invoice.status !== "autorizada" || !invoice.authorized_xml) {
     throw new Error("Solo se pueden enviar facturas autorizadas.");
   }
 
+  let delivery: DeliveryResult;
   try {
-    await deliverInvoiceEmail(invoice, await getCompanySettings(supabase), to);
+    delivery = await deliverInvoiceEmail(invoice, await getCompanySettings(supabase), to);
   } catch (error) {
     const message = errorMessage(error);
     await supabase.from("invoices").update({ last_email_error: message }).eq("id", invoice.id);
@@ -67,9 +78,13 @@ export async function sendInvoiceEmail(supabase: SupabaseClient, invoiceId: stri
   // El correo ya salió: si falla este registro no se informa como error de envío.
   await supabase
     .from("invoices")
-    .update({ last_emailed_at: new Date().toISOString(), last_emailed_to: to.join(", "), last_email_error: null })
+    .update({
+      last_emailed_at: new Date().toISOString(),
+      last_emailed_to: delivery.accepted.join(", "),
+      last_email_error: delivery.rejected.length ? rejectedRecipientsMessage(delivery.rejected) : null,
+    })
     .eq("id", invoice.id);
-  return { to };
+  return { to: delivery.accepted, rejected: delivery.rejected };
 }
 
 /**
@@ -88,9 +103,9 @@ export async function maybeSendOnAuthorization(supabase: SupabaseClient, invoice
     claimedAt = await claimAutoSend(supabase, invoiceId, to);
     if (!claimedAt) return null; // Otra petición ya lo envió o lo está enviando.
 
-    await deliverInvoiceEmail(invoice, settings, to);
-    await confirmAutoSend(supabase, invoiceId, claimedAt);
-    return { sent: true, to };
+    const delivery = await deliverInvoiceEmail(invoice, settings, to);
+    await confirmAutoSend(supabase, invoiceId, claimedAt, delivery.accepted, delivery.rejected);
+    return { sent: true, to: delivery.accepted, rejected: delivery.rejected };
   } catch (error) {
     const message = errorMessage(error);
     if (claimedAt) await releaseAutoSend(supabase, invoiceId, claimedAt, message);
