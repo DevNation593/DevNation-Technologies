@@ -123,7 +123,10 @@ export async function checkAuthorization(id: string): Promise<ActionResult<Autho
 }
 
 /** Reenvía la factura autorizada a hasta 3 destinatarios. */
-export async function resendInvoiceEmail(id: string, recipients: string): Promise<ActionResult<{ to: string[] }>> {
+export async function resendInvoiceEmail(
+  id: string,
+  recipients: string,
+): Promise<ActionResult<{ to: string[]; rejected: string[] }>> {
   try {
     const supabase = await adminClient();
     const to = parseRecipients(typeof recipients === "string" ? recipients : "");

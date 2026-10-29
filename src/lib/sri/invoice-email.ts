@@ -41,7 +41,37 @@ export interface SmtpConfig {
   password: string;
 }
 
-export type EmailOutcome = { sent: true; to: string[] } | { sent: false; error: string };
+/** Resultado de un envío: qué destinatarios "to" aceptó el servidor y cuáles rechazó. */
+export interface DeliveryResult {
+  messageId: string;
+  accepted: string[];
+  rejected: string[];
+}
+
+export type EmailOutcome = { sent: true; to: string[]; rejected: string[] } | { sent: false; error: string };
+
+type SmtpAddress = string | { address?: string };
+
+/**
+ * Reparte los destinatarios "to" entre aceptados y rechazados según la respuesta del
+ * servidor. La copia oculta no cuenta, y un destinatario sin confirmación se da por rechazado.
+ */
+export function splitDelivery(
+  to: string[],
+  info: { accepted?: SmtpAddress[]; rejected?: SmtpAddress[] },
+): { accepted: string[]; rejected: string[] } {
+  const normalize = (a: SmtpAddress) => (typeof a === "string" ? a : (a.address ?? "")).trim().toLowerCase();
+  const accepted = new Set((info.accepted ?? []).map(normalize));
+  return {
+    accepted: to.filter((email) => accepted.has(email.toLowerCase())),
+    rejected: to.filter((email) => !accepted.has(email.toLowerCase())),
+  };
+}
+
+/** Texto para registrar en la factura los destinatarios que hay que volver a intentar. */
+export function rejectedRecipientsMessage(rejected: string[]): string {
+  return `El servidor SMTP rechazó: ${rejected.join(", ")}. Reenvía la factura a esas direcciones.`;
+}
 
 function escapeHtml(value: string): string {
   return value
@@ -182,8 +212,12 @@ export function buildInvoiceEmail(input: {
   };
 }
 
-/** Envía el correo por el servidor SMTP configurado. Lanza errores con un mensaje legible. */
-export async function sendViaSmtp(email: OutgoingEmail, config: SmtpConfig): Promise<{ messageId: string }> {
+/**
+ * Envía el correo por el servidor SMTP configurado y devuelve qué destinatarios "to" se
+ * aceptaron. Nodemailer resuelve si el servidor acepta al menos un destinatario (aunque sea
+ * solo la copia oculta), así que si no se aceptó ninguno de "to" se lanza un error.
+ */
+export async function sendViaSmtp(email: OutgoingEmail, config: SmtpConfig): Promise<DeliveryResult> {
   const transport = nodemailer.createTransport({
     host: config.host,
     port: config.port,
@@ -194,8 +228,9 @@ export async function sendViaSmtp(email: OutgoingEmail, config: SmtpConfig): Pro
     greetingTimeout: SMTP_CONNECTION_TIMEOUT_MS,
     socketTimeout: SMTP_SOCKET_TIMEOUT_MS,
   });
+  let info: { messageId?: string; accepted?: SmtpAddress[]; rejected?: SmtpAddress[] };
   try {
-    const info = await transport.sendMail({
+    info = await transport.sendMail({
       from: email.from,
       to: email.to,
       bcc: email.bcc,
@@ -204,10 +239,15 @@ export async function sendViaSmtp(email: OutgoingEmail, config: SmtpConfig): Pro
       html: email.html,
       attachments: email.attachments,
     });
-    return { messageId: String(info.messageId ?? "") };
   } catch (error) {
     throw new Error(smtpErrorMessage(error));
   } finally {
     transport.close();
   }
+
+  const { accepted, rejected } = splitDelivery(email.to, info);
+  if (accepted.length === 0) {
+    throw new Error(`El servidor SMTP rechazó a todos los destinatarios: ${rejected.join(", ")}.`.slice(0, MAX_ERROR_LENGTH));
+  }
+  return { messageId: String(info.messageId ?? ""), accepted, rejected };
 }
