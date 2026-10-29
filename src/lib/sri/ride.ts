@@ -20,6 +20,11 @@ export interface RideData {
   /** Nombre base de los adjuntos, p. ej. "FACTURA-001-001-000000123". */
   fileBase: string;
   authorized: boolean;
+  /**
+   * Fecha ISO fija del documento (autorización o creación). El PDF la usa como fecha de
+   * creación para que dos generaciones de la misma factura sean idénticas byte a byte.
+   */
+  documentDate: string;
   issuer: { ruc: string; razonSocial: string; nombreComercial: string; rows: RideRow[] };
   authorizationNumber: string;
   authorizedAt: string;
@@ -55,6 +60,7 @@ export function buildRideData(invoice: Invoice, settings: CompanySettings): Ride
     number,
     fileBase: `FACTURA-${number}`,
     authorized: invoice.status === "autorizada" || invoice.status === "anulada",
+    documentDate: invoice.authorized_at ?? invoice.created_at,
     issuer: {
       ruc: settings.ruc,
       razonSocial: settings.razon_social,

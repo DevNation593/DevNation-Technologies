@@ -98,7 +98,15 @@ function RideDocument({ data, logoDataUrl }: { data: RideData; logoDataUrl: stri
   const logo = /^data:image\/(png|jpeg);base64,/.test(logoDataUrl) ? logoDataUrl : "";
 
   return (
-    <Document title={data.fileBase} author={data.issuer.razonSocial} language="es">
+    // Fecha fija: el mismo correo automático debe tener el mismo contenido para que la
+    // clave de idempotencia de Resend lo reconozca como duplicado.
+    <Document
+      title={data.fileBase}
+      author={data.issuer.razonSocial}
+      language="es"
+      creationDate={new Date(data.documentDate)}
+      modificationDate={new Date(data.documentDate)}
+    >
       <Page size="A4" style={styles.page}>
         {!data.authorized && (
           <Text style={styles.warning}>

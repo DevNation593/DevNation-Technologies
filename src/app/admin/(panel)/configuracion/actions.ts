@@ -5,22 +5,10 @@ import { adminClient } from "@/lib/admin/auth";
 import { actionError, text, type ActionResult } from "@/lib/admin/server";
 import type { CompanySettings } from "@/lib/admin/types";
 import { regimes } from "@/lib/sri/catalogs";
-import { parseRecipients } from "@/lib/sri/invoice-email";
+import { parseRecipients, parseSender } from "@/lib/sri/invoice-email";
 
 const MAX_LOGO_LENGTH = 400_000;
 const MAX_EMAIL_SETTING_LENGTH = 200;
-/** "correo@dominio" o "Nombre <correo@dominio>" (el nombre sin <, >, comillas ni saltos de línea). */
-const SENDER_PATTERN = /^(?:([^<>"\r\n]+?)\s*<([^<>\s]+)>|([^<>\s]+))$/;
-
-/** Valida el remitente; devuelve "" si está vacío. */
-function senderAddress(value: string): string {
-  const sender = value.trim();
-  if (!sender) return "";
-  const match = sender.length <= MAX_EMAIL_SETTING_LENGTH ? SENDER_PATTERN.exec(sender) : null;
-  if (!match) throw new Error("Escribe el remitente, p. ej. DevNation Facturación <facturacion@devnation.tech>.");
-  parseRecipients(match[2] ?? match[3], 1);
-  return sender;
-}
 
 /** Valida un correo opcional (responder a, copia oculta); devuelve "" si está vacío. */
 function optionalEmail(value: string): string {
@@ -37,7 +25,7 @@ export async function saveInvoiceEmailSettings(input: {
   try {
     const supabase = await adminClient();
     const enabled = input.enabled === true;
-    const from = senderAddress(typeof input.from === "string" ? input.from : "");
+    const from = parseSender(typeof input.from === "string" ? input.from : "");
     if (enabled && !from) {
       throw new Error("Escribe el remitente, p. ej. DevNation Facturación <facturacion@devnation.tech>.");
     }

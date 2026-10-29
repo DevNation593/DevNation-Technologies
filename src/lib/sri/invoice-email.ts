@@ -53,6 +53,29 @@ export function parseRecipients(value: string, max = 3): string[] {
   return recipients;
 }
 
+const MAX_SENDER_LENGTH = 200;
+/** "correo" o "Nombre <correo>"; el nombre no admite <, >, comillas, comas, punto y coma ni saltos de línea. */
+const SENDER_PATTERN = /^(?:([^<>",;\r\n]+?)\s*<([^<>]+)>|([^<>]+))$/;
+
+/**
+ * Valida el remitente del correo de facturación y lo devuelve normalizado ("" si está vacío).
+ * La dirección debe ser exactamente un correo válido, para que Resend no lo rechace al enviar.
+ */
+export function parseSender(value: string): string {
+  const sender = value.trim();
+  if (!sender) return "";
+  const error = new Error("Escribe el remitente, p. ej. DevNation Facturación <facturacion@devnation.tech>.");
+  const match = sender.length <= MAX_SENDER_LENGTH ? SENDER_PATTERN.exec(sender) : null;
+  if (!match) throw error;
+  const address = match[2] ?? match[3];
+  try {
+    if (parseRecipients(address, 1)[0] !== address) throw error;
+  } catch {
+    throw error;
+  }
+  return sender;
+}
+
 /** Destinatarios del envío automático al autorizar, o null si no corresponde enviar. Nunca lanza. */
 export function autoSendRecipients(invoice: Invoice, settings: CompanySettings, hasApiKey: boolean): string[] | null {
   if (!settings.invoice_email_enabled || !hasApiKey || !settings.invoice_email_from.trim()) return null;
