@@ -32,7 +32,7 @@ corrección. Agradeceremos públicamente tu reporte si así lo deseas.
 | Panel `/admin` | Acceso sin autorización, server actions invocadas directamente, escalada de un usuario autenticado que no es administrador. |
 | Supabase (Postgres + Auth) | RLS mal configurado, permisos a `anon`, uso de la clave secreta fuera de `scripts/`. |
 | Facturación SRI (`src/lib/sri/`) | Fuga del certificado `.p12` o su contraseña, inyección en el XML, alteración de comprobantes autorizados. |
-| Avisos de caducidad (`pg_cron` + `pg_net`) | Fuga de la API key de Resend, ejecución de las funciones de aviso por usuarios no administradores, HTML del correo sin escapar. |
+| Correo de facturas (SMTP) | Fuga de las credenciales SMTP, inyección de cabeceras en destinatarios o remitente, HTML del correo sin escapar, envíos duplicados. |
 | Cliente SOAP del SRI | Procesar respuestas XML no confiables (entidades externas, tamaños excesivos). |
 
 ## Controles existentes
@@ -53,18 +53,16 @@ Estos controles **no deben debilitarse** sin una justificación explícita en el
 - **Firma electrónica:** el `.p12` y su contraseña se guardan en `public.sri_certificates` cifrados con AES-256-GCM
   (`src/lib/sri/crypto.ts`) usando `SRI_ENCRYPTION_KEY`, que solo existe en las variables del servidor; cada valor
   lleva su campo como AAD. La tabla solo contiene texto cifrado y datos públicos del certificado.
-- **Avisos por correo:** la API key de Resend y el remitente viven en Supabase Vault. Las funciones
-  `private.notify_certificate_expiry` y `private.send_alert_email` no se pueden ejecutar desde la API (sin `execute`
-  para `anon` ni `authenticated`); las ejecuta `pg_cron`. La única función `security definer`,
-  `public.send_certificate_test_email`, comprueba `private.is_admin()` antes de nada. El HTML del correo escapa los
-  datos del certificado con `private.escape_html`.
 - **Integridad de facturas:** el trigger `private.protect_authorized_invoice` impide modificar o borrar comprobantes
   autorizados o con clave de acceso, y la numeración se reserva de forma atómica con `next_document_number`.
 - **Descargas:** el XML y el RIDE en PDF de las facturas se sirven con `Cache-Control: private, no-store` tras
   `requireAdmin()`.
-- **Correo de facturas:** `RESEND_API_KEY` solo existe en las variables del servidor y nunca aparece en mensajes de
-  error. Los destinatarios se validan (máximo 3, sin espacios, saltos de línea ni `<>`), así que no se pueden inyectar
-  cabeceras; el HTML del correo escapa los datos del comprador y del emisor.
+- **Correo de facturas:** las credenciales SMTP (`SMTP_USER`, `SMTP_PASSWORD`) solo existen en las variables del
+  servidor; el panel solo recibe el host y los nombres de las variables que faltan, y los errores de envío se
+  traducen a mensajes sin credenciales (`smtpErrorMessage`). Fuera de la propia máquina, la conexión SMTP exige TLS
+  (465) o STARTTLS obligatorio (`requireTLS`), así que la contraseña nunca viaja en claro. Los destinatarios y el remitente se validan (máximo 3,
+  sin espacios, saltos de línea ni `<>`), así que no se pueden inyectar cabeceras; el HTML del correo escapa los datos
+  del comprador y del emisor. El envío automático reserva la factura de forma atómica para no enviarla dos veces.
 - **Privacidad:** Google Analytics solo se carga cuando la persona acepta las cookies de medición.
 
 ## Lista de verificación para revisiones
@@ -114,4 +112,4 @@ Los revisores (humanos o automáticos, ver [`AGENTS.md`](./AGENTS.md)) deben com
 - Ejecuta `npm run lint`, `npx tsc --noEmit` y `npm run build` antes de abrir un PR.
 - Usa el ambiente de **pruebas** del SRI y una base de Supabase local (`npx supabase start`) para desarrollar.
 - Si un secreto se filtra (commit, log, captura), **rótalo de inmediato** (clave de Supabase, contraseña del `.p12`,
-  credenciales de administradores, `SRI_ENCRYPTION_KEY` y volver a subir la firma, API key de Resend) y avisa por el canal privado indicado arriba; borrar el commit no es suficiente.
+  credenciales de administradores, `SRI_ENCRYPTION_KEY` y volver a subir la firma, contraseña SMTP) y avisa por el canal privado indicado arriba; borrar el commit no es suficiente.

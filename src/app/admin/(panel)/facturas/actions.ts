@@ -127,7 +127,7 @@ export async function resendInvoiceEmail(id: string, recipients: string): Promis
   try {
     const supabase = await adminClient();
     const to = parseRecipients(typeof recipients === "string" ? recipients : "");
-    const result = await sendInvoiceEmail(supabase, id, { to, trigger: "manual" });
+    const result = await sendInvoiceEmail(supabase, id, to);
     revalidatePath(`/admin/facturas/${id}`);
     return { ok: true, ...result };
   } catch (error) {

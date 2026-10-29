@@ -14,8 +14,6 @@ const MAX_LOGO_LENGTH = 400_000;
 const MAX_P12_BYTES = 50 * 1024;
 const MAX_P12_PASSWORD_LENGTH = 200;
 const MAX_EMAIL_SETTING_LENGTH = 200;
-const TEST_EMAIL_POLLS = 20;
-const TEST_EMAIL_POLL_MS = 500;
 
 /** Valida un correo opcional (responder a, copia oculta); devuelve "" si está vacío. */
 function optionalEmail(value: string): string {
@@ -179,9 +177,6 @@ export async function uploadCertificate(
         valid_to: validTo,
         uploaded_at: new Date().toISOString(),
         uploaded_by: admin.userId,
-        notified_days: [],
-        pending_alert_request_id: null,
-        pending_alert_day: null,
       },
       { onConflict: "id" },
     );
@@ -200,31 +195,6 @@ export async function removeCertificate(): Promise<ActionResult<object>> {
     if (error) throw new Error("No se pudo quitar la firma electrónica.");
     revalidatePath("/admin", "layout");
     return { ok: true };
-  } catch (error) {
-    return actionError(error);
-  }
-}
-
-/** Envía un correo de prueba con Resend (configurado en Supabase Vault) a todos los administradores. */
-export async function sendCertificateTestEmail(): Promise<ActionResult<{ pending: boolean }>> {
-  try {
-    const supabase = await adminClient();
-    const { data: requestId, error } = await supabase.rpc("send_certificate_test_email");
-    if (error) throw error;
-
-    // pg_net envía en segundo plano: se espera la respuesta de Resend para que el botón
-    // confirme la configuración en vez de dar por bueno lo que solo quedó en cola.
-    for (let attempt = 0; attempt < TEST_EMAIL_POLLS; attempt++) {
-      await new Promise((resolve) => setTimeout(resolve, TEST_EMAIL_POLL_MS));
-      const { data, error: statusError } = await supabase.rpc("certificate_test_email_status", {
-        request_id: requestId,
-      });
-      if (statusError) throw statusError;
-      const status = data as { status: "pending" | "sent" | "error" | "unknown"; message?: string };
-      if (status.status === "sent") return { ok: true, pending: false };
-      if (status.status === "error") throw new Error(`Resend rechazó el correo de prueba: ${status.message}`);
-    }
-    return { ok: true, pending: true };
   } catch (error) {
     return actionError(error);
   }
