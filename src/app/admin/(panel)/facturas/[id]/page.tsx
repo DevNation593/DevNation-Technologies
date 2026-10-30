@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/admin/auth";
-import { listClients } from "@/lib/admin/queries";
+import { listClients, listProducts } from "@/lib/admin/queries";
 import { getCompanySettings } from "@/lib/admin/server";
 import type { Invoice } from "@/lib/admin/types";
 import { getCertificateStatus } from "@/lib/sri/certificate";
@@ -20,9 +20,10 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const { data } = await supabase.from("invoices").select("*").eq("id", id).maybeSingle();
   if (!data) notFound();
 
-  const [settings, clients, certificate] = await Promise.all([
+  const [settings, clients, products, certificate] = await Promise.all([
     getCompanySettings(supabase),
     listClients(),
+    listProducts(),
     getCertificateStatus(),
   ]);
   return (
@@ -30,6 +31,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
       invoice={{ ...(data as Invoice), ambiente: data.ambiente === null ? null : (Number(data.ambiente) as 1 | 2) }}
       settings={settings}
       clients={clients}
+      products={products}
       certificateReady={certificate.configured && !certificate.expired}
     />
   );

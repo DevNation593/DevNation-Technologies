@@ -36,6 +36,15 @@ export interface Client {
   legal_representative: string;
 }
 
+/** Producto o servicio del catálogo; la factura copia sus datos en el ítem. */
+export interface Product {
+  id: string;
+  code: string;
+  description: string;
+  unit_price: number;
+  vat_code: string;
+}
+
 /** Datos del cliente copiados en el documento (no cambian si luego se edita el cliente). */
 export interface ClientSnapshot {
   name: string;

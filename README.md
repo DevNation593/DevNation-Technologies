@@ -21,7 +21,7 @@ Antes de publicar, verifica también que el dominio y el buzón configurado en `
 
 ## Panel administrativo (`/admin`)
 
-Facturación electrónica SRI, cotizaciones (proformas), contratos y clientes. Los datos viven en Supabase y solo
+Facturación electrónica SRI, cotizaciones (proformas), contratos, clientes y productos. Los datos viven en Supabase y solo
 acceden los usuarios dados de alta por comando (no hay registro público).
 
 ### Base de datos
@@ -54,6 +54,9 @@ npm run admin:remove-user -- --email ana@devnation.tech
 2. Sube la firma electrónica `.p12` en **Configuración → Firma electrónica** (ver «Firma electrónica y avisos de caducidad»).
 3. Emite primero en ambiente de **pruebas**. Cuando el SRI habilite tu RUC en producción, cambia el ambiente en
    Configuración; si ya emitiste facturas en otro sistema, ajusta el próximo secuencial.
+4. Opcionalmente, registra en **Productos** lo que facturas con frecuencia (código, descripción, precio sin IVA y
+   tarifa de IVA). En la factura, «Agregar producto registrado» lo añade como ítem; la factura guarda una copia, así que
+   editar o borrar el producto no cambia facturas ya creadas.
 
 Flujo de emisión: se asigna el secuencial y la clave de acceso, se genera el XML (factura v1.1.0), se firma con
 XAdES-BES y se envía a recepción; luego se consulta la autorización. Si el SRI **devuelve** el comprobante se corrige y
