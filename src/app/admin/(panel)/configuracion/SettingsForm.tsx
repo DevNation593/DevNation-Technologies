@@ -3,13 +3,14 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import CompanyLogo from "@/components/admin/CompanyLogo";
+import { MAX_LOGO_BYTES } from "@/lib/admin/logo";
 import type { CompanySettings } from "@/lib/admin/types";
 import { regimes, type Regime } from "@/lib/sri/catalogs";
-import { saveSettings, setNextInvoiceSequential } from "./actions";
+import { removeLogo, saveSettings, setNextInvoiceSequential, uploadLogo } from "./actions";
 
 type TextKey = Exclude<
   { [K in keyof CompanySettings]-?: CompanySettings[K] extends string ? K : never }[keyof CompanySettings],
-  "updated_at" | "regimen"
+  "updated_at" | "regimen" | "logo_path" | "logo_url"
 >;
 
 export default function SettingsForm({
@@ -32,13 +33,31 @@ export default function SettingsForm({
     </label>
   );
 
-  function loadLogo(file: File | undefined) {
+  // El logo se guarda en Storage en cuanto se elige, sin esperar a «Guardar».
+  const loadLogo = (input: HTMLInputElement) => {
+    const file = input.files?.[0];
+    input.value = "";
     if (!file) return;
-    if (file.size > 300_000) return setMessage({ text: "El logo debe pesar máximo 300 KB.", error: true });
-    const reader = new FileReader();
-    reader.onload = () => setForm((f) => ({ ...f, logo_data_url: String(reader.result) }));
-    reader.readAsDataURL(file);
-  }
+    if (file.size > MAX_LOGO_BYTES) return setMessage({ text: "El logo debe pesar máximo 1 MB.", error: true });
+    const data = new FormData();
+    data.set("logo", file);
+    startTransition(async () => {
+      const result = await uploadLogo(data);
+      if (!result.ok) return setMessage({ text: result.error, error: true });
+      setForm((f) => ({ ...f, logo_path: result.path, logo_url: result.url }));
+      setMessage({ text: "Logo actualizado." });
+      router.refresh();
+    });
+  };
+
+  const deleteLogo = () =>
+    startTransition(async () => {
+      const result = await removeLogo();
+      if (!result.ok) return setMessage({ text: result.error, error: true });
+      setForm((f) => ({ ...f, logo_path: "", logo_url: "" }));
+      setMessage({ text: "Logo quitado." });
+      router.refresh();
+    });
 
   const save = () =>
     startTransition(async () => {
@@ -64,14 +83,19 @@ export default function SettingsForm({
         {message && <p className={message.error ? "notice danger" : "notice success"}>{message.text}</p>}
 
         <div style={{ display: "flex", gap: 14, alignItems: "center", marginBottom: 12 }}>
-          <CompanyLogo src={form.logo_data_url} />
+          <CompanyLogo src={form.logo_url} />
           <div style={{ flex: 1 }}>
             <label className="field" style={{ marginBottom: 4 }}>
               Logo
-              <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={(e) => loadLogo(e.target.files?.[0])} />
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                disabled={pending}
+                onChange={(e) => loadLogo(e.target)}
+              />
             </label>
-            {form.logo_data_url && (
-              <button className="btn-ghost btn-sm" onClick={() => setForm((f) => ({ ...f, logo_data_url: "" }))}>
+            {form.logo_url && (
+              <button className="btn-ghost btn-sm" onClick={deleteLogo} disabled={pending}>
                 Quitar logo
               </button>
             )}

@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/admin/auth";
 import { getCompanySettings } from "@/lib/admin/server";
+import { logoForPdf } from "@/lib/admin/storage";
 import type { Invoice } from "@/lib/admin/types";
 import { buildRideData } from "@/lib/sri/ride";
 import { renderRidePdf } from "@/lib/sri/ride-pdf";
@@ -18,7 +19,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   const settings = await getCompanySettings(supabase);
   const ride = buildRideData(invoice, settings);
-  const pdf = await renderRidePdf(ride, settings.logo_data_url);
+  const pdf = await renderRidePdf(ride, await logoForPdf(supabase, settings));
 
   return new Response(new Uint8Array(pdf), {
     headers: {

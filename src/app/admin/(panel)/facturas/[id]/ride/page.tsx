@@ -49,7 +49,7 @@ export default async function RidePage({ params }: { params: Promise<{ id: strin
           <div className="ride-top">
             <div>
               <div className="ride-logo">
-                <CompanyLogo src={settings.logo_data_url} />
+                <CompanyLogo src={settings.logo_url} />
               </div>
               <div className="ride-box">
                 <p>

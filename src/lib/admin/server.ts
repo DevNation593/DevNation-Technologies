@@ -2,6 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { inferIdentificationType } from "@/lib/sri/identification";
 import type { IdentificationType } from "@/lib/sri/catalogs";
+import { logoPublicUrl } from "./storage";
 import type { ClientSnapshot, CompanySettings } from "./types";
 
 export type ActionResult<T = { id: string }> = ({ ok: true } & T) | { ok: false; error: string };
@@ -26,7 +27,13 @@ export function number(value: unknown, min = 0, max = 1_000_000_000): number {
 export async function getCompanySettings(supabase: SupabaseClient): Promise<CompanySettings> {
   const { data, error } = await supabase.from("company_settings").select("*").eq("id", 1).single();
   if (error) throw error;
-  return { ...data, ambiente: Number(data.ambiente) as 1 | 2 } as CompanySettings;
+  // El logo anterior a Storage (data URL) solo se usa si aún no se migró.
+  const { logo_data_url: legacyLogo, ...row } = data;
+  return {
+    ...row,
+    ambiente: Number(row.ambiente) as 1 | 2,
+    logo_url: row.logo_path ? logoPublicUrl(supabase, row.logo_path) : (legacyLogo ?? ""),
+  } as CompanySettings;
 }
 
 export async function nextNumber(supabase: SupabaseClient, key: string): Promise<number> {

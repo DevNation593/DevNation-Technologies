@@ -1,17 +1,27 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { adminClient, requireAdmin } from "@/lib/admin/auth";
 import { dateInEcuador, formatDate } from "@/lib/admin/format";
 import { actionError, text, type ActionResult } from "@/lib/admin/server";
+import { MAX_LOGO_BYTES } from "@/lib/admin/logo";
+import { BRANDING_BUCKET, logoPublicUrl } from "@/lib/admin/storage";
 import type { CompanySettings } from "@/lib/admin/types";
 import { regimes } from "@/lib/sri/catalogs";
 import { encryptSecret } from "@/lib/sri/crypto";
 import { parseRecipients, parseSender } from "@/lib/sri/invoice-email";
 import { parseP12 } from "@/lib/sri/p12";
 
-const MAX_LOGO_LENGTH = 400_000;
 const MAX_P12_BYTES = 50 * 1024;
+
+/** Formatos de logo admitidos: extensión en Storage y comprobación del contenido real del archivo. */
+const LOGO_TYPES: Record<string, { ext: string; matches: (bytes: Buffer) => boolean }> = {
+  "image/png": { ext: "png", matches: (b) => b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) },
+  "image/jpeg": { ext: "jpg", matches: (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
+  "image/webp": { ext: "webp", matches: (b) => b.toString("ascii", 0, 4) === "RIFF" && b.toString("ascii", 8, 12) === "WEBP" },
+  "image/svg+xml": { ext: "svg", matches: (b) => /<svg[\s>]/i.test(b.toString("utf8", 0, 4096)) },
+};
 const MAX_P12_PASSWORD_LENGTH = 200;
 const MAX_EMAIL_SETTING_LENGTH = 200;
 
@@ -22,23 +32,20 @@ function optionalEmail(value: string): string {
 }
 
 export async function saveInvoiceEmailSettings(input: {
-  enabled: boolean;
   from: string;
   replyTo: string;
   bcc: string;
 }): Promise<ActionResult<object>> {
   try {
     const supabase = await adminClient();
-    const enabled = input.enabled === true;
     const from = parseSender(typeof input.from === "string" ? input.from : "");
-    if (enabled && !from) {
+    if (!from) {
       throw new Error("Escribe el remitente, p. ej. DevNation Facturación <facturacion@devnation.tech>.");
     }
 
     const { error } = await supabase
       .from("company_settings")
       .update({
-        invoice_email_enabled: enabled,
         invoice_email_from: from,
         invoice_email_reply_to: optionalEmail(input.replyTo),
         invoice_email_bcc: optionalEmail(input.bcc),
@@ -60,11 +67,6 @@ export async function saveSettings(input: CompanySettings): Promise<ActionResult
     if (!/^[0-9]{3}$/.test(input.estab) || !/^[0-9]{3}$/.test(input.pto_emi)) {
       throw new Error("Establecimiento y punto de emisión deben tener 3 dígitos (p. ej. 001).");
     }
-    const logo = typeof input.logo_data_url === "string" ? input.logo_data_url : "";
-    if (logo && (!/^data:image\/(png|jpeg|webp|svg\+xml);base64,/.test(logo) || logo.length > MAX_LOGO_LENGTH)) {
-      throw new Error("El logo debe ser PNG, JPG, WEBP o SVG de máximo 300 KB.");
-    }
-
     const { error } = await supabase
       .from("company_settings")
       .update({
@@ -84,10 +86,77 @@ export async function saveSettings(input: CompanySettings): Promise<ActionResult
         email: text(input.email, 200),
         telefono: text(input.telefono, 50),
         ciudad: text(input.ciudad, 200),
-        logo_data_url: logo,
       })
       .eq("id", 1);
     if (error) throw error;
+    revalidatePath("/admin", "layout");
+    return { ok: true };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+/** Sube el logo al bucket branding y reemplaza el anterior. */
+export async function uploadLogo(formData: FormData): Promise<ActionResult<{ url: string; path: string }>> {
+  try {
+    const supabase = await adminClient();
+    const file = formData.get("logo");
+    if (!(file instanceof File) || file.size === 0) throw new Error("Selecciona la imagen del logo.");
+    const type = LOGO_TYPES[file.type];
+    const bytes = Buffer.from(await file.arrayBuffer());
+    if (!type || file.size > MAX_LOGO_BYTES || !type.matches(bytes)) {
+      throw new Error("El logo debe ser PNG, JPG, WEBP o SVG de máximo 1 MB.");
+    }
+
+    const { data: current, error: loadError } = await supabase
+      .from("company_settings")
+      .select("logo_path")
+      .eq("id", 1)
+      .single();
+    if (loadError) throw loadError;
+
+    const path = `logo/${randomUUID()}.${type.ext}`;
+    const storage = supabase.storage.from(BRANDING_BUCKET);
+    const { error: uploadError } = await storage.upload(path, bytes, {
+      contentType: file.type,
+      // Cada logo tiene una ruta nueva, así que se puede guardar en caché sin límite.
+      cacheControl: "31536000",
+      upsert: false,
+    });
+    if (uploadError) throw new Error("No se pudo subir el logo.");
+
+    const { error } = await supabase
+      .from("company_settings")
+      .update({ logo_path: path, logo_data_url: "" })
+      .eq("id", 1);
+    if (error) {
+      await storage.remove([path]);
+      throw error;
+    }
+    // Si falla el borrado del logo anterior solo queda un archivo sin usar.
+    if (current.logo_path) await storage.remove([current.logo_path]);
+    revalidatePath("/admin", "layout");
+    return { ok: true, path, url: logoPublicUrl(supabase, path) };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function removeLogo(): Promise<ActionResult<object>> {
+  try {
+    const supabase = await adminClient();
+    const { data: current, error: loadError } = await supabase
+      .from("company_settings")
+      .select("logo_path")
+      .eq("id", 1)
+      .single();
+    if (loadError) throw loadError;
+    const { error } = await supabase
+      .from("company_settings")
+      .update({ logo_path: "", logo_data_url: "" })
+      .eq("id", 1);
+    if (error) throw error;
+    if (current.logo_path) await supabase.storage.from(BRANDING_BUCKET).remove([current.logo_path]);
     revalidatePath("/admin", "layout");
     return { ok: true };
   } catch (error) {

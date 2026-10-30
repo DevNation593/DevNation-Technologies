@@ -21,7 +21,7 @@ Antes de publicar, verifica también que el dominio y el buzón configurado en `
 
 ## Panel administrativo (`/admin`)
 
-Facturación electrónica SRI, cotizaciones (proformas), contratos y clientes. Los datos viven en Supabase y solo
+Facturación electrónica SRI, cotizaciones (proformas), contratos, clientes y productos. Los datos viven en Supabase y solo
 acceden los usuarios dados de alta por comando (no hay registro público).
 
 ### Base de datos
@@ -37,6 +37,26 @@ acceden los usuarios dados de alta por comando (no hay registro público).
 
 Para desarrollo local, `npx supabase start` levanta Supabase en Docker con la misma migración; `npx supabase status`
 muestra la URL y las claves.
+
+### Archivos en Supabase Storage
+
+El logo y los XML de las facturas se guardan en Storage, no en la base de datos. Las migraciones crean los buckets:
+
+- `branding` (público): el logo de la empresa, hasta 1 MB (PNG, JPG, WEBP o SVG). Se sube desde **Configuración** en
+  cuanto se elige el archivo; el PDF de la factura solo incluye logos PNG o JPG.
+- `facturas` (privado, solo administradores): `<id de la factura>/<clave de acceso>-firmada.xml` y
+  `-autorizada.xml`. El XML autorizado no se puede reemplazar ni borrar, y su hash SHA-256 queda en la factura y se
+  comprueba cada vez que se descarga o se envía por correo.
+
+Si tenías datos de una versión anterior (logo o XML guardados en la base), después de aplicar las migraciones y
+desplegar el código ejecuta una vez:
+
+```bash
+npm run storage:migrate
+```
+
+Sube a Storage lo que falte y vacía esas columnas; se puede repetir sin riesgo. Usa `SUPABASE_SECRET_KEY`, así que se
+ejecuta en tu equipo.
 
 ### Usuarios
 
@@ -54,6 +74,9 @@ npm run admin:remove-user -- --email ana@devnation.tech
 2. Sube la firma electrónica `.p12` en **Configuración → Firma electrónica** (ver «Firma electrónica y avisos de caducidad»).
 3. Emite primero en ambiente de **pruebas**. Cuando el SRI habilite tu RUC en producción, cambia el ambiente en
    Configuración; si ya emitiste facturas en otro sistema, ajusta el próximo secuencial.
+4. Opcionalmente, registra en **Productos** lo que facturas con frecuencia (código, descripción, precio sin IVA y
+   tarifa de IVA). En la factura, «Agregar producto registrado» lo añade como ítem; la factura guarda una copia, así que
+   editar o borrar el producto no cambia facturas ya creadas.
 
 Flujo de emisión: se asigna el secuencial y la clave de acceso, se genera el XML (factura v1.1.0), se firma con
 XAdES-BES y se envía a recepción; luego se consulta la autorización. Si el SRI **devuelve** el comprobante se corrige y
@@ -63,7 +86,8 @@ o guarda como PDF desde el navegador, y desde la factura se descargan el RIDE en
 
 ### Envío de facturas por correo
 
-Cada factura autorizada puede enviarse al comprador con el RIDE en PDF y el XML autorizado, por tu servidor SMTP.
+Cada factura autorizada se envía automáticamente al comprador con el RIDE en PDF y el XML autorizado, por tu servidor
+SMTP.
 
 1. Define en `.env.local` y en el hosting (Vercel) las variables del servidor SMTP (solo servidor, nunca en
    `NEXT_PUBLIC_*`): `SMTP_HOST`, `SMTP_PORT` (465 usa TLS directo; en 587 STARTTLS es obligatorio y, si el servidor no lo
@@ -72,8 +96,9 @@ Cada factura autorizada puede enviarse al comprador con el RIDE en PDF y el XML 
 2. En **Configuración → Correo de facturación** comprueba que aparezca «Servidor SMTP: configurado» y escribe el
    remitente (p. ej. `DevNation Facturación <facturacion@devnation.tech>`). Debe ser una dirección que tu cuenta SMTP
    pueda usar, normalmente la misma de `SMTP_USER`. Opcionalmente, «Responder a» y una copia oculta.
-3. Activa «Enviar automáticamente cada factura autorizada al comprador»: al quedar autorizada, se envía al correo del
-   comprador (hasta 3 direcciones separadas por coma) una sola vez.
+3. Al quedar autorizada, la factura se envía una sola vez al correo del comprador (hasta 3 direcciones separadas por
+   coma). Si el comprador no tiene correo no se envía nada; si falta la configuración SMTP o el remitente, el error
+   queda visible en la factura para reenviarla cuando esté lista.
 4. Desde una factura autorizada, **Reenviar por correo** permite enviarla de nuevo o a otros destinatarios. El
    resultado del último envío (o el error) queda visible en la factura.
 

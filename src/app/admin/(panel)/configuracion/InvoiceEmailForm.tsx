@@ -15,14 +15,14 @@ export default function InvoiceEmailForm({
 }) {
   const router = useRouter();
   const [form, setForm] = useState({
-    enabled: settings.invoice_email_enabled,
     from: settings.invoice_email_from,
     replyTo: settings.invoice_email_reply_to,
     bcc: settings.invoice_email_bcc,
   });
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
   const [pending, startTransition] = useTransition();
-  const logoSupported = !settings.logo_data_url || /^data:image\/(png|jpeg);base64,/.test(settings.logo_data_url);
+  const logoSupported =
+    !settings.logo_url || /\.(png|jpg)$/.test(settings.logo_path) || /^data:image\/(png|jpeg);base64,/.test(settings.logo_url);
 
   const save = () =>
     startTransition(async () => {
@@ -47,8 +47,9 @@ export default function InvoiceEmailForm({
     <section className="adm-card adm-card-pad" style={{ marginBottom: 16 }}>
       <h2>Correo de facturación</h2>
       <p className="hint" style={{ marginTop: 0 }}>
-        Cada factura autorizada se envía al comprador con el RIDE en PDF y el XML autorizado, por tu servidor SMTP. El
-        remitente debe ser una dirección que tu cuenta SMTP pueda usar (normalmente la misma de SMTP_USER).
+        Cada factura autorizada se envía automáticamente al correo del comprador con el RIDE en PDF y el XML
+        autorizado, por tu servidor SMTP. El remitente debe ser una dirección que tu cuenta SMTP pueda usar (normalmente
+        la misma de SMTP_USER).
       </p>
       <p className={smtp.missing.length ? "notice warning" : "notice success"}>
         {smtp.missing.length
@@ -59,14 +60,6 @@ export default function InvoiceEmailForm({
         <p className="notice warning">El logo no es PNG ni JPG: el PDF de las facturas saldrá sin logo.</p>
       )}
       {message && <p className={message.error ? "notice danger" : "notice success"}>{message.text}</p>}
-      <label className="check">
-        <input
-          type="checkbox"
-          checked={form.enabled}
-          onChange={(e) => setForm((f) => ({ ...f, enabled: e.target.checked }))}
-        />
-        Enviar automáticamente cada factura autorizada al comprador
-      </label>
       {field("from", "Remitente", "DevNation Facturación <facturacion@devnation.tech>")}
       <div className="grid2">
         {field("replyTo", "Responder a", "contacto@devnation.tech")}

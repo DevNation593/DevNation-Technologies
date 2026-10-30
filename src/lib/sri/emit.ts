@@ -3,6 +3,7 @@ import { randomInt } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { todayInEcuador } from "@/lib/admin/format";
 import { getCompanySettings, nextNumber } from "@/lib/admin/server";
+import { storeAuthorizedXml, storeSignedXml } from "@/lib/admin/storage";
 import type { Invoice, InvoiceStatus, SriMessage } from "@/lib/admin/types";
 import { buildAccessKey } from "./access-key";
 import { INVOICE_DOC_CODE } from "./catalogs";
@@ -86,11 +87,15 @@ async function applyAuthorization(
   const messages = [...receptionMessages, ...result.messages];
 
   if (result.status === "AUTORIZADO") {
+    // Si no se puede guardar el XML, la factura sigue «enviada» y se vuelve a consultar.
+    const stored = await storeAuthorizedXml(supabase, invoice.id, invoice.access_key!, buildAuthorizedXml(result));
     await update(supabase, invoice.id, {
       status: "autorizada",
       authorization_number: result.authorizationNumber ?? invoice.access_key,
       authorized_at: result.authorizedAt ?? new Date().toISOString(),
-      authorized_xml: buildAuthorizedXml(result),
+      authorized_xml: null,
+      authorized_xml_path: stored.path,
+      authorized_xml_sha256: stored.sha256,
       sri_messages: messages,
     });
     return { status: "autorizada", messages };
@@ -163,7 +168,8 @@ export async function emitInvoice(supabase: SupabaseClient, id: string): Promise
   const signedXml = signInvoiceXml(xml, certificate);
 
   await update(supabase, id, {
-    signed_xml: signedXml,
+    signed_xml: null,
+    signed_xml_path: await storeSignedXml(supabase, id, invoice.access_key!, signedXml),
     subtotal: totals.subtotal,
     discount_total: totals.discount,
     vat_total: totals.vat,

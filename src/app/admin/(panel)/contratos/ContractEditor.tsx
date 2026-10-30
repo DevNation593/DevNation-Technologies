@@ -243,7 +243,7 @@ export default function ContractEditor({
             <article className="doc-paper">
               <div className="contract-head">
                 <div className="contract-corp">
-                  <CompanyLogo src={settings.logo_data_url} className="contract-mark" />
+                  <CompanyLogo src={settings.logo_url} className="contract-mark" />
                   <div>
                     <strong>{settings.nombre_comercial || settings.razon_social}</strong>
                     <span>SOFTWARE · CLOUD · CONSULTING</span>

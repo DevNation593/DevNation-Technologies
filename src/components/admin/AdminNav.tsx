@@ -10,6 +10,7 @@ export const adminSections = [
   { href: "/admin/cotizaciones", label: "Cotizaciones", icon: "tabler:file-dollar" },
   { href: "/admin/contratos", label: "Contratos", icon: "tabler:file-certificate" },
   { href: "/admin/clientes", label: "Clientes", icon: "tabler:users" },
+  { href: "/admin/productos", label: "Productos", icon: "tabler:package" },
   { href: "/admin/configuracion", label: "Configuración", icon: "tabler:settings" },
 ] as const;
 

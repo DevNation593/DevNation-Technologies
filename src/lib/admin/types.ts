@@ -18,8 +18,10 @@ export interface CompanySettings {
   email: string;
   telefono: string;
   ciudad: string;
-  logo_data_url: string;
-  invoice_email_enabled: boolean;
+  /** Ruta del logo en el bucket branding ("" si no hay). */
+  logo_path: string;
+  /** URL pública del logo (o data URL de un logo anterior a Storage); "" si no hay. */
+  logo_url: string;
   invoice_email_from: string;
   invoice_email_reply_to: string;
   invoice_email_bcc: string;
@@ -35,6 +37,15 @@ export interface Client {
   phone: string;
   address: string;
   legal_representative: string;
+}
+
+/** Producto o servicio del catálogo; la factura copia sus datos en el ítem. */
+export interface Product {
+  id: string;
+  code: string;
+  description: string;
+  unit_price: number;
+  vat_code: string;
 }
 
 /** Datos del cliente copiados en el documento (no cambian si luego se edita el cliente). */
@@ -181,8 +192,12 @@ export interface Invoice {
   discount_total: number;
   vat_total: number;
   total: number;
+  /** XML guardados en columnas antes de usar Storage; las facturas nuevas usan las rutas. */
   signed_xml: string | null;
   authorized_xml: string | null;
+  signed_xml_path: string | null;
+  authorized_xml_path: string | null;
+  authorized_xml_sha256: string | null;
   authorization_number: string | null;
   authorized_at: string | null;
   sri_messages: SriMessage[];

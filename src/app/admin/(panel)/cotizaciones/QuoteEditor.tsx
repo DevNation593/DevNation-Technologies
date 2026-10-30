@@ -283,7 +283,7 @@ export default function QuoteEditor({
           <main className="doc-sheet">
             <div className="doc-head">
               <div className="doc-company">
-                <CompanyLogo src={settings.logo_data_url} />
+                <CompanyLogo src={settings.logo_url} />
                 <div>
                   <h1>{settings.nombre_comercial || settings.razon_social}</h1>
                   <p>{companyLine || "Quito, Ecuador"}</p>

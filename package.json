@@ -9,7 +9,8 @@
     "lint": "eslint",
     "admin:create-user": "node --env-file-if-exists=.env.local scripts/admin-users.mjs create",
     "admin:list-users": "node --env-file-if-exists=.env.local scripts/admin-users.mjs list",
-    "admin:remove-user": "node --env-file-if-exists=.env.local scripts/admin-users.mjs remove"
+    "admin:remove-user": "node --env-file-if-exists=.env.local scripts/admin-users.mjs remove",
+    "storage:migrate": "node --env-file-if-exists=.env.local scripts/migrate-storage.mjs"
   },
   "dependencies": {
     "@iconify/react": "^6.0.2",

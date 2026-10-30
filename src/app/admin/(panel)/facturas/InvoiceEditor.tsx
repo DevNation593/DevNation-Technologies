@@ -7,9 +7,10 @@ import ClientPicker from "@/components/admin/ClientPicker";
 import CompanyLogo from "@/components/admin/CompanyLogo";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import PageHeader from "@/components/admin/PageHeader";
+import ProductPicker from "@/components/admin/ProductPicker";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { formatDate, formatDateTime, formatMoney, invoiceNumber, todayInEcuador } from "@/lib/admin/format";
-import type { Client, CompanySettings, Invoice, InvoicePayment, SriMessage } from "@/lib/admin/types";
+import type { Client, CompanySettings, Invoice, InvoicePayment, Product, SriMessage } from "@/lib/admin/types";
 import {
   FINAL_CONSUMER_ID,
   FINAL_CONSUMER_NAME,
@@ -54,6 +55,9 @@ const EDITABLE = ["borrador", "devuelta", "no_autorizada"];
 
 const emptyItem = (): InvoiceItem => ({ code: "", description: "", quantity: 1, unitPrice: 0, discount: 0, vatCode: "4" });
 
+/** Un ítem sin datos (el que trae una factura nueva) se reemplaza al agregar un producto. */
+const isBlankItem = (it: InvoiceItem) => !it.code.trim() && !it.description.trim() && !it.unitPrice && !it.discount;
+
 function initialState(invoice: Invoice | null): InvoiceInput {
   if (invoice) {
     return {
@@ -94,11 +98,13 @@ export default function InvoiceEditor({
   invoice,
   settings,
   clients,
+  products,
   certificateReady,
 }: {
   invoice: Invoice | null;
   settings: CompanySettings;
   clients: Client[];
+  products: Product[];
   certificateReady: boolean;
 }) {
   const router = useRouter();
@@ -128,6 +134,18 @@ export default function InvoiceEditor({
   const setBuyer = (patch: Partial<InvoiceInput["buyer"]>) => update({ buyer: { ...form.buyer, ...patch } });
   const setItem = (i: number, patch: Partial<InvoiceItem>) =>
     update({ items: form.items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)) });
+  const addProduct = (p: Product) => {
+    const item: InvoiceItem = {
+      code: p.code,
+      description: p.description,
+      quantity: 1,
+      unitPrice: p.unit_price,
+      discount: 0,
+      vatCode: p.vat_code,
+    };
+    const items = form.items.filter((it) => !isBlankItem(it));
+    update({ items: [...items, item] });
+  };
   const setPayment = (i: number, patch: Partial<InvoicePayment>) =>
     update({ payments: form.payments.map((p, idx) => (idx === i ? { ...p, ...patch } : p)) });
   const setInfo = (i: number, patch: Partial<{ name: string; value: string }>) =>
@@ -264,7 +282,7 @@ export default function InvoiceEditor({
                 Descargar PDF
               </a>
             )}
-            {(invoice.authorized_xml || invoice.signed_xml) && (
+            {(invoice.authorized_xml_path || invoice.signed_xml_path || invoice.authorized_xml || invoice.signed_xml) && (
               <a className="btn btn-secondary" href={`/admin/facturas/${invoice.id}/xml`}>
                 Descargar XML
               </a>
@@ -400,6 +418,9 @@ export default function InvoiceEditor({
                 <label className="field">
                   Email
                   <input value={form.buyer.email} onChange={(e) => setBuyer({ email: e.target.value })} />
+                  {editable && !form.buyer.email.trim() && (
+                    <span className="hint">Sin correo, la factura autorizada no se enviará al comprador.</span>
+                  )}
                 </label>
                 <label className="field">
                   Teléfono
@@ -540,7 +561,7 @@ export default function InvoiceEditor({
           <main className="doc-sheet">
             <div className="doc-head">
               <div className="doc-company">
-                <CompanyLogo src={settings.logo_data_url} />
+                <CompanyLogo src={settings.logo_url} />
                 <div>
                   <h1>{settings.razon_social}</h1>
                   <p>
@@ -587,6 +608,7 @@ export default function InvoiceEditor({
             </div>
 
             <div className="doc-table-wrap">
+              {editable && <ProductPicker products={products} onPick={addProduct} />}
               <table className="doc-table invoice-items">
                 <thead>
                   <tr>
@@ -758,6 +780,11 @@ export default function InvoiceEditor({
             Se firmará y enviará la factura por <strong>{formatMoney(totals.total)}</strong> a{" "}
             <strong>{form.buyer.name}</strong> en el ambiente de <strong>{environments[environment].toUpperCase()}</strong>.
             {!numbered && " Se le asignará el siguiente número secuencial."}
+            {form.buyer.email.trim() && (
+              <>
+                {" "}Al quedar autorizada se enviará a <strong>{form.buyer.email.trim()}</strong>.
+              </>
+            )}
           </>
         }
         confirmLabel="Firmar y emitir"
