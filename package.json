@@ -19,6 +19,7 @@
     "fast-xml-parser": "5.11.2",
     "framer-motion": "^12.35.1",
     "jsbarcode": "3.12.3",
+    "libxml2-wasm": "0.7.2",
     "next": "16.1.6",
     "node-forge": "1.4.0",
     "nodemailer": "10.3.1",
