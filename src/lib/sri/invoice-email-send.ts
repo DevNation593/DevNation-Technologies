@@ -88,22 +88,23 @@ export async function sendInvoiceEmail(
 }
 
 /**
- * Envío automático al autorizar: devuelve null si no correspondía enviar. Nunca lanza.
+ * Envío automático al autorizar: toda factura autorizada se envía al correo del comprador.
+ * Devuelve null si no correspondía enviar (p. ej. el comprador no tiene correo). Nunca lanza.
  * Reserva la factura antes de enviar (ver invoice-email-claim.ts) para que dos peticiones
- * simultáneas no manden el correo dos veces; si el envío falla, libera la reserva.
+ * simultáneas no manden el correo dos veces; si el envío falla (también por falta de
+ * configuración SMTP o remitente), libera la reserva y deja el error visible en la factura.
  */
 export async function maybeSendOnAuthorization(supabase: SupabaseClient, invoiceId: string): Promise<EmailOutcome | null> {
   let claimedAt: string | null = null;
   try {
     const invoice = await loadInvoice(supabase, invoiceId);
-    const settings = await getCompanySettings(supabase);
-    const to = autoSendRecipients(invoice, settings, "config" in readSmtpConfig());
+    const to = autoSendRecipients(invoice);
     if (!to) return null;
 
     claimedAt = await claimAutoSend(supabase, invoiceId, to);
     if (!claimedAt) return null; // Otra petición ya lo envió o lo está enviando.
 
-    const delivery = await deliverInvoiceEmail(invoice, settings, to);
+    const delivery = await deliverInvoiceEmail(invoice, await getCompanySettings(supabase), to);
     await confirmAutoSend(supabase, invoiceId, claimedAt, delivery.accepted, delivery.rejected);
     return { sent: true, to: delivery.accepted, rejected: delivery.rejected };
   } catch (error) {

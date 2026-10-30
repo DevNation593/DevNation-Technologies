@@ -400,6 +400,9 @@ export default function InvoiceEditor({
                 <label className="field">
                   Email
                   <input value={form.buyer.email} onChange={(e) => setBuyer({ email: e.target.value })} />
+                  {editable && !form.buyer.email.trim() && (
+                    <span className="hint">Sin correo, la factura autorizada no se enviará al comprador.</span>
+                  )}
                 </label>
                 <label className="field">
                   Teléfono
@@ -758,6 +761,11 @@ export default function InvoiceEditor({
             Se firmará y enviará la factura por <strong>{formatMoney(totals.total)}</strong> a{" "}
             <strong>{form.buyer.name}</strong> en el ambiente de <strong>{environments[environment].toUpperCase()}</strong>.
             {!numbered && " Se le asignará el siguiente número secuencial."}
+            {form.buyer.email.trim() && (
+              <>
+                {" "}Al quedar autorizada se enviará a <strong>{form.buyer.email.trim()}</strong>.
+              </>
+            )}
           </>
         }
         confirmLabel="Firmar y emitir"

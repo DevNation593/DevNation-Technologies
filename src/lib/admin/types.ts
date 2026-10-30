@@ -19,7 +19,6 @@ export interface CompanySettings {
   telefono: string;
   ciudad: string;
   logo_data_url: string;
-  invoice_email_enabled: boolean;
   invoice_email_from: string;
   invoice_email_reply_to: string;
   invoice_email_bcc: string;

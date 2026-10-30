@@ -63,7 +63,8 @@ o guarda como PDF desde el navegador, y desde la factura se descargan el RIDE en
 
 ### Envío de facturas por correo
 
-Cada factura autorizada puede enviarse al comprador con el RIDE en PDF y el XML autorizado, por tu servidor SMTP.
+Cada factura autorizada se envía automáticamente al comprador con el RIDE en PDF y el XML autorizado, por tu servidor
+SMTP.
 
 1. Define en `.env.local` y en el hosting (Vercel) las variables del servidor SMTP (solo servidor, nunca en
    `NEXT_PUBLIC_*`): `SMTP_HOST`, `SMTP_PORT` (465 usa TLS directo; en 587 STARTTLS es obligatorio y, si el servidor no lo
@@ -72,8 +73,9 @@ Cada factura autorizada puede enviarse al comprador con el RIDE en PDF y el XML 
 2. En **Configuración → Correo de facturación** comprueba que aparezca «Servidor SMTP: configurado» y escribe el
    remitente (p. ej. `DevNation Facturación <facturacion@devnation.tech>`). Debe ser una dirección que tu cuenta SMTP
    pueda usar, normalmente la misma de `SMTP_USER`. Opcionalmente, «Responder a» y una copia oculta.
-3. Activa «Enviar automáticamente cada factura autorizada al comprador»: al quedar autorizada, se envía al correo del
-   comprador (hasta 3 direcciones separadas por coma) una sola vez.
+3. Al quedar autorizada, la factura se envía una sola vez al correo del comprador (hasta 3 direcciones separadas por
+   coma). Si el comprador no tiene correo no se envía nada; si falta la configuración SMTP o el remitente, el error
+   queda visible en la factura para reenviarla cuando esté lista.
 4. Desde una factura autorizada, **Reenviar por correo** permite enviarla de nuevo o a otros destinatarios. El
    resultado del último envío (o el error) queda visible en la factura.
 

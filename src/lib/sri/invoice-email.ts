@@ -169,15 +169,14 @@ export function smtpErrorMessage(error: unknown): string {
   return serverText ? truncate(`El servidor SMTP respondió: ${serverText}`) : "No se pudo enviar el correo.";
 }
 
-/** Destinatarios del envío automático al autorizar, o null si no corresponde enviar. Nunca lanza. */
-export function autoSendRecipients(invoice: Invoice, settings: CompanySettings, smtpReady: boolean): string[] | null {
-  if (!settings.invoice_email_enabled || !smtpReady || !settings.invoice_email_from.trim()) return null;
+/**
+ * Destinatarios del envío automático al autorizar, o null si no corresponde enviar: la factura no
+ * está autorizada, ya se envió o el comprador no tiene correo. Lanza si su correo no es válido.
+ */
+export function autoSendRecipients(invoice: Invoice): string[] | null {
   if (invoice.status !== "autorizada" || !invoice.authorized_xml || invoice.last_emailed_at) return null;
-  try {
-    return parseRecipients(invoice.buyer.email ?? "");
-  } catch {
-    return null;
-  }
+  const email = invoice.buyer.email?.trim() ?? "";
+  return email ? parseRecipients(email) : null;
 }
 
 export function buildInvoiceEmail(input: {

@@ -22,23 +22,20 @@ function optionalEmail(value: string): string {
 }
 
 export async function saveInvoiceEmailSettings(input: {
-  enabled: boolean;
   from: string;
   replyTo: string;
   bcc: string;
 }): Promise<ActionResult<object>> {
   try {
     const supabase = await adminClient();
-    const enabled = input.enabled === true;
     const from = parseSender(typeof input.from === "string" ? input.from : "");
-    if (enabled && !from) {
+    if (!from) {
       throw new Error("Escribe el remitente, p. ej. DevNation Facturación <facturacion@devnation.tech>.");
     }
 
     const { error } = await supabase
       .from("company_settings")
       .update({
-        invoice_email_enabled: enabled,
         invoice_email_from: from,
         invoice_email_reply_to: optionalEmail(input.replyTo),
         invoice_email_bcc: optionalEmail(input.bcc),
