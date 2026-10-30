@@ -1,4 +1,5 @@
 import { requireAdmin } from "@/lib/admin/auth";
+import { loadInvoiceXml } from "@/lib/admin/storage";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -7,11 +8,16 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const supabase = await createClient();
   const { data } = await supabase
     .from("invoices")
-    .select("access_key, authorized_xml, signed_xml")
+    .select("access_key, authorized_xml, authorized_xml_path, authorized_xml_sha256, signed_xml, signed_xml_path")
     .eq("id", id)
     .maybeSingle();
 
-  const xml = data?.authorized_xml ?? data?.signed_xml;
+  let xml: string | null = null;
+  try {
+    xml = data ? await loadInvoiceXml(supabase, data) : null;
+  } catch (error) {
+    return new Response(error instanceof Error ? error.message : "No se pudo leer el XML.", { status: 502 });
+  }
   if (!data || !xml) return new Response("No encontrado", { status: 404 });
 
   return new Response(xml, {

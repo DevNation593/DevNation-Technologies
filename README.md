@@ -38,6 +38,26 @@ acceden los usuarios dados de alta por comando (no hay registro público).
 Para desarrollo local, `npx supabase start` levanta Supabase en Docker con la misma migración; `npx supabase status`
 muestra la URL y las claves.
 
+### Archivos en Supabase Storage
+
+El logo y los XML de las facturas se guardan en Storage, no en la base de datos. Las migraciones crean los buckets:
+
+- `branding` (público): el logo de la empresa, hasta 1 MB (PNG, JPG, WEBP o SVG). Se sube desde **Configuración** en
+  cuanto se elige el archivo; el PDF de la factura solo incluye logos PNG o JPG.
+- `facturas` (privado, solo administradores): `<id de la factura>/<clave de acceso>-firmada.xml` y
+  `-autorizada.xml`. El XML autorizado no se puede reemplazar ni borrar, y su hash SHA-256 queda en la factura y se
+  comprueba cada vez que se descarga o se envía por correo.
+
+Si tenías datos de una versión anterior (logo o XML guardados en la base), después de aplicar las migraciones y
+desplegar el código ejecuta una vez:
+
+```bash
+npm run storage:migrate
+```
+
+Sube a Storage lo que falte y vacía esas columnas; se puede repetir sin riesgo. Usa `SUPABASE_SECRET_KEY`, así que se
+ejecuta en tu equipo.
+
 ### Usuarios
 
 ```bash

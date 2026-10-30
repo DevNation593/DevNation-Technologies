@@ -2,6 +2,7 @@ import "server-only";
 import nodemailer from "nodemailer";
 import { formatMoney } from "@/lib/admin/format";
 import type { CompanySettings, Invoice } from "@/lib/admin/types";
+import { hasAuthorizedXml } from "@/lib/admin/storage";
 import type { RideData } from "./ride";
 
 /** Sin espacios ni caracteres que permitan inyectar cabeceras o nombres ("<", ",", ";"…). */
@@ -174,7 +175,7 @@ export function smtpErrorMessage(error: unknown): string {
  * está autorizada, ya se envió o el comprador no tiene correo. Lanza si su correo no es válido.
  */
 export function autoSendRecipients(invoice: Invoice): string[] | null {
-  if (invoice.status !== "autorizada" || !invoice.authorized_xml || invoice.last_emailed_at) return null;
+  if (invoice.status !== "autorizada" || !hasAuthorizedXml(invoice) || invoice.last_emailed_at) return null;
   const email = invoice.buyer.email?.trim() ?? "";
   return email ? parseRecipients(email) : null;
 }

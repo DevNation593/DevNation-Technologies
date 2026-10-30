@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getCompanySettings } from "@/lib/admin/server";
+import { hasAuthorizedXml, loadAuthorizedXml, logoForPdf } from "@/lib/admin/storage";
 import type { CompanySettings, Invoice } from "@/lib/admin/types";
 import {
   autoSendRecipients,
@@ -30,7 +31,12 @@ function errorMessage(error: unknown): string {
  * Genera el RIDE en PDF y envía la factura autorizada por SMTP. No escribe en la base.
  * Devuelve qué destinatarios aceptó el servidor; lanza si no aceptó ninguno.
  */
-async function deliverInvoiceEmail(invoice: Invoice, settings: CompanySettings, to: string[]): Promise<DeliveryResult> {
+async function deliverInvoiceEmail(
+  supabase: SupabaseClient,
+  invoice: Invoice,
+  settings: CompanySettings,
+  to: string[],
+): Promise<DeliveryResult> {
   const smtp = readSmtpConfig();
   if ("missing" in smtp || !settings.invoice_email_from.trim()) {
     throw new Error("Configura el correo de facturación (servidor SMTP y remitente) en Configuración.");
@@ -38,8 +44,10 @@ async function deliverInvoiceEmail(invoice: Invoice, settings: CompanySettings, 
   const optional = (value: string) => (value.trim() ? parseRecipients(value, 1) : undefined);
 
   const data = buildRideData(invoice, settings);
-  const pdf = await renderRidePdf(data, settings.logo_data_url);
-  const email = buildInvoiceEmail({ data, settings, pdf, authorizedXml: invoice.authorized_xml ?? "" });
+  const [authorizedXml, logo] = await Promise.all([loadAuthorizedXml(supabase, invoice), logoForPdf(supabase, settings)]);
+  if (!authorizedXml) throw new Error("La factura no tiene XML autorizado.");
+  const pdf = await renderRidePdf(data, logo);
+  const email = buildInvoiceEmail({ data, settings, pdf, authorizedXml });
   return sendViaSmtp(
     {
       from: settings.invoice_email_from.trim(),
@@ -63,13 +71,13 @@ export async function sendInvoiceEmail(
   to: string[],
 ): Promise<{ to: string[]; rejected: string[] }> {
   const invoice = await loadInvoice(supabase, invoiceId);
-  if (invoice.status !== "autorizada" || !invoice.authorized_xml) {
+  if (invoice.status !== "autorizada" || !hasAuthorizedXml(invoice)) {
     throw new Error("Solo se pueden enviar facturas autorizadas.");
   }
 
   let delivery: DeliveryResult;
   try {
-    delivery = await deliverInvoiceEmail(invoice, await getCompanySettings(supabase), to);
+    delivery = await deliverInvoiceEmail(supabase, invoice, await getCompanySettings(supabase), to);
   } catch (error) {
     const message = errorMessage(error);
     await supabase.from("invoices").update({ last_email_error: message }).eq("id", invoice.id);
@@ -104,7 +112,7 @@ export async function maybeSendOnAuthorization(supabase: SupabaseClient, invoice
     claimedAt = await claimAutoSend(supabase, invoiceId, to);
     if (!claimedAt) return null; // Otra petición ya lo envió o lo está enviando.
 
-    const delivery = await deliverInvoiceEmail(invoice, await getCompanySettings(supabase), to);
+    const delivery = await deliverInvoiceEmail(supabase, invoice, await getCompanySettings(supabase), to);
     await confirmAutoSend(supabase, invoiceId, claimedAt, delivery.accepted, delivery.rejected);
     return { sent: true, to: delivery.accepted, rejected: delivery.rejected };
   } catch (error) {

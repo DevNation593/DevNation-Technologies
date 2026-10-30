@@ -21,7 +21,8 @@ export default function InvoiceEmailForm({
   });
   const [message, setMessage] = useState<{ text: string; error?: boolean } | null>(null);
   const [pending, startTransition] = useTransition();
-  const logoSupported = !settings.logo_data_url || /^data:image\/(png|jpeg);base64,/.test(settings.logo_data_url);
+  const logoSupported =
+    !settings.logo_url || /\.(png|jpg)$/.test(settings.logo_path) || /^data:image\/(png|jpeg);base64,/.test(settings.logo_url);
 
   const save = () =>
     startTransition(async () => {

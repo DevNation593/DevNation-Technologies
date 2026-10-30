@@ -282,7 +282,7 @@ export default function InvoiceEditor({
                 Descargar PDF
               </a>
             )}
-            {(invoice.authorized_xml || invoice.signed_xml) && (
+            {(invoice.authorized_xml_path || invoice.signed_xml_path || invoice.authorized_xml || invoice.signed_xml) && (
               <a className="btn btn-secondary" href={`/admin/facturas/${invoice.id}/xml`}>
                 Descargar XML
               </a>
@@ -561,7 +561,7 @@ export default function InvoiceEditor({
           <main className="doc-sheet">
             <div className="doc-head">
               <div className="doc-company">
-                <CompanyLogo src={settings.logo_data_url} />
+                <CompanyLogo src={settings.logo_url} />
                 <div>
                   <h1>{settings.razon_social}</h1>
                   <p>

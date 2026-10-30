@@ -57,6 +57,11 @@ Estos controles **no deben debilitarse** sin una justificación explícita en el
   autorizados o con clave de acceso, y la numeración se reserva de forma atómica con `next_document_number`.
 - **Descargas:** el XML y el RIDE en PDF de las facturas se sirven con `Cache-Control: private, no-store` tras
   `requireAdmin()`.
+- **Storage:** los XML de las facturas están en el bucket privado `facturas`, que solo leen y escriben los
+  administradores (`private.is_admin()`); el XML autorizado no tiene política de reemplazo ni de borrado, y su
+  SHA-256 se guarda en la factura (protegido por `private.protect_authorized_invoice`) y se verifica al leerlo. El
+  bucket `branding` es público solo para el logo; subir o borrar exige ser administrador, y el servidor comprueba el
+  tipo real del archivo además del tipo declarado.
 - **Correo de facturas:** las credenciales SMTP (`SMTP_USER`, `SMTP_PASSWORD`) solo existen en las variables del
   servidor; el panel solo recibe el host y los nombres de las variables que faltan, y los errores de envío se
   traducen a mensajes sin credenciales (`smtpErrorMessage`). Fuera de la propia máquina, la conexión SMTP exige TLS
