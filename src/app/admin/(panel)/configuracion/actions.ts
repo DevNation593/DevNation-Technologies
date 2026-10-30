@@ -4,13 +4,13 @@ import { revalidatePath } from "next/cache";
 import { adminClient, requireAdmin } from "@/lib/admin/auth";
 import { dateInEcuador, formatDate } from "@/lib/admin/format";
 import { actionError, text, type ActionResult } from "@/lib/admin/server";
+import { MAX_LOGO_DATA_URL_LENGTH } from "@/lib/admin/logo";
 import type { CompanySettings } from "@/lib/admin/types";
 import { regimes } from "@/lib/sri/catalogs";
 import { encryptSecret } from "@/lib/sri/crypto";
 import { parseRecipients, parseSender } from "@/lib/sri/invoice-email";
 import { parseP12 } from "@/lib/sri/p12";
 
-const MAX_LOGO_LENGTH = 400_000;
 const MAX_P12_BYTES = 50 * 1024;
 const MAX_P12_PASSWORD_LENGTH = 200;
 const MAX_EMAIL_SETTING_LENGTH = 200;
@@ -61,8 +61,8 @@ export async function saveSettings(input: CompanySettings): Promise<ActionResult
       throw new Error("Establecimiento y punto de emisión deben tener 3 dígitos (p. ej. 001).");
     }
     const logo = typeof input.logo_data_url === "string" ? input.logo_data_url : "";
-    if (logo && (!/^data:image\/(png|jpeg|webp|svg\+xml);base64,/.test(logo) || logo.length > MAX_LOGO_LENGTH)) {
-      throw new Error("El logo debe ser PNG, JPG, WEBP o SVG de máximo 300 KB.");
+    if (logo && (!/^data:image\/(png|jpeg|webp|svg\+xml);base64,/.test(logo) || logo.length > MAX_LOGO_DATA_URL_LENGTH)) {
+      throw new Error("El logo debe ser PNG, JPG, WEBP o SVG de máximo 1 MB.");
     }
 
     const { error } = await supabase

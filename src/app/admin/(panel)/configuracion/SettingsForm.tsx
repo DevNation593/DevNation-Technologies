@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import CompanyLogo from "@/components/admin/CompanyLogo";
+import { MAX_LOGO_BYTES } from "@/lib/admin/logo";
 import type { CompanySettings } from "@/lib/admin/types";
 import { regimes, type Regime } from "@/lib/sri/catalogs";
 import { saveSettings, setNextInvoiceSequential } from "./actions";
@@ -34,7 +35,7 @@ export default function SettingsForm({
 
   function loadLogo(file: File | undefined) {
     if (!file) return;
-    if (file.size > 300_000) return setMessage({ text: "El logo debe pesar máximo 300 KB.", error: true });
+    if (file.size > MAX_LOGO_BYTES) return setMessage({ text: "El logo debe pesar máximo 1 MB.", error: true });
     const reader = new FileReader();
     reader.onload = () => setForm((f) => ({ ...f, logo_data_url: String(reader.result) }));
     reader.readAsDataURL(file);
