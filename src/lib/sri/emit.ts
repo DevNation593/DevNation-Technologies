@@ -8,6 +8,7 @@ import { buildAccessKey } from "./access-key";
 import { INVOICE_DOC_CODE } from "./catalogs";
 import { getSigningCertificate } from "./certificate";
 import { buildAuthorizedXml, queryAuthorization, sendToReception, type AuthorizationResult } from "./client";
+import { assertInvoiceSchema } from "./schema";
 import { signInvoiceXml } from "./sign";
 import { computeInvoiceTotals } from "./totals";
 import { validateInvoice, validateIssuer } from "./validate";
@@ -131,6 +132,20 @@ export async function emitInvoice(supabase: SupabaseClient, id: string): Promise
     throw new Error("La firma electrónica está caducada.");
   }
 
+  // También la estructura del XML: si aún no hay numeración se usan valores
+  // provisionales con el mismo formato que exige el XSD.
+  await assertInvoiceSchema(
+    buildInvoiceXml({
+      invoice,
+      settings,
+      environment: invoice.ambiente ?? settings.ambiente,
+      estab: invoice.estab ?? settings.estab,
+      ptoEmi: invoice.pto_emi ?? settings.pto_emi,
+      secuencial: invoice.secuencial ?? "000000001",
+      accessKey: invoice.access_key ?? "0".repeat(49),
+    }),
+  );
+
   invoice = await ensureNumbering(supabase, invoice);
   const environment = invoice.ambiente as 1 | 2;
   const totals = computeInvoiceTotals(invoice.items);
@@ -144,6 +159,7 @@ export async function emitInvoice(supabase: SupabaseClient, id: string): Promise
     secuencial: invoice.secuencial!,
     accessKey: invoice.access_key!,
   });
+  await assertInvoiceSchema(xml);
   const signedXml = signInvoiceXml(xml, certificate);
 
   await update(supabase, id, {
